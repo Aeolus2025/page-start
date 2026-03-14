@@ -19,7 +19,17 @@
           :class="{ 'is-current': eng.id === currentEngine?.id }"
           @click="select(eng)"
         >
-          <span class="picker-icon">{{ eng.icon || '🔍' }}</span>
+          <svg v-if="getIconfontId(eng)" class="picker-icon-svg" :aria-label="eng.name">
+            <use :href="`#${getIconfontId(eng)}`" />
+          </svg>
+          <img
+            v-else-if="getIconUrl(eng)"
+            :src="getIconUrl(eng)"
+            :alt="eng.name"
+            class="picker-icon-img"
+            @error="onPickerIconError(eng)"
+          />
+          <span v-else class="picker-icon">{{ getIconFallback(eng) }}</span>
           <span class="picker-name">{{ eng.name }}</span>
         </div>
         <div class="picker-item picker-item-add" @click="showAddForm = true">
@@ -27,14 +37,11 @@
           <span class="picker-name">添加自定义</span>
         </div>
       </div>
-      <div v-if="showAddForm" class="add-form">
-        <input v-model="customName" type="text" placeholder="名称" class="add-input" />
-        <input v-model="customUrl" type="text" placeholder="搜索 URL，用 %s 表示关键词" class="add-input add-url" />
-        <div class="add-actions">
-          <button type="button" class="add-btn cancel" @click="cancelAdd">取消</button>
-          <button type="button" class="add-btn confirm" @click="confirmAdd">添加</button>
-        </div>
-      </div>
+      <EnginePickerAddForm
+        :visible="showAddForm"
+        @close="showAddForm = false"
+        @add="onAddEngine"
+      />
     </div>
   </Transition>
 
@@ -59,7 +66,17 @@
               :class="{ 'is-current': eng.id === currentEngine?.id }"
               @click="select(eng)"
             >
-              <span class="picker-icon">{{ eng.icon || '🔍' }}</span>
+              <svg v-if="getIconfontId(eng)" class="picker-icon-svg" :aria-label="eng.name">
+                <use :href="`#${getIconfontId(eng)}`" />
+              </svg>
+              <img
+                v-else-if="getIconUrl(eng)"
+                :src="getIconUrl(eng)"
+                :alt="eng.name"
+                class="picker-icon-img"
+                @error="onPickerIconError(eng)"
+              />
+              <span v-else class="picker-icon">{{ getIconFallback(eng) }}</span>
               <span class="picker-name">{{ eng.name }}</span>
             </div>
             <div class="picker-item picker-item-add" @click="showAddForm = true">
@@ -67,68 +84,89 @@
               <span class="picker-name">添加自定义</span>
             </div>
           </div>
-          <div v-if="showAddForm" class="add-form">
-            <input v-model="customName" type="text" placeholder="名称" class="add-input" />
-            <input v-model="customUrl" type="text" placeholder="搜索 URL，用 %s 表示关键词" class="add-input add-url" />
-            <div class="add-actions">
-              <button type="button" class="add-btn cancel" @click="cancelAdd">取消</button>
-              <button type="button" class="add-btn confirm" @click="confirmAdd">添加</button>
-            </div>
-          </div>
+          <EnginePickerAddForm
+            :visible="showAddForm"
+            @close="showAddForm = false"
+            @add="onAddEngine"
+          />
         </div>
       </div>
     </Transition>
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
+import { getEngineIconUrl, isIconfontSymbol } from '@/utils/engine';
+import { DEFAULT_ENGINES } from '@/constants/engines';
+import EnginePickerAddForm from './EnginePickerAddForm.vue';
+import type { SearchEngine } from '@/types';
 
 const STORAGE_KEY = 'page-start-custom-engines';
 
-const defaultEngines = [
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=%s', icon: '🐾' },
-  { id: 'google', name: '谷歌', url: 'https://www.google.com/search?q=%s', icon: 'G' },
-  { id: 'bing', name: '必应', url: 'https://www.bing.com/search?q=%s', icon: 'B' }
-];
+const pickerIconErrors = ref(new Set<string>());
 
-const loadCustomEngines = () => {
+function getIconfontId(eng: SearchEngine | null | undefined): string {
+  if (!eng?.icon || !isIconfontSymbol(eng.icon)) return '';
+  return eng.icon.trim();
+}
+
+function getIconUrl(eng: SearchEngine | null | undefined): string {
+  if (!eng || getIconfontId(eng) || pickerIconErrors.value.has(eng.id)) return '';
+  return getEngineIconUrl(eng) || '';
+}
+
+function getIconFallback(eng: SearchEngine | null | undefined): string {
+  if (!eng?.name) return '🔍';
+  return eng.name.slice(0, 1);
+}
+
+function onPickerIconError(eng: SearchEngine) {
+  if (eng?.id) pickerIconErrors.value = new Set([...pickerIconErrors.value, eng.id]);
+}
+
+const loadCustomEngines = (): SearchEngine[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    const list = JSON.parse(raw);
+    const list = JSON.parse(raw) as { name: string; url: string }[];
     return Array.isArray(list) ? list.map((e, i) => ({ ...e, id: 'custom-' + i })) : [];
   } catch {
     return [];
   }
 };
 
-const saveCustomEngines = (list) => {
+const saveCustomEngines = (list: SearchEngine[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list.map(({ name, url }) => ({ name, url }))));
 };
 
-const props = defineProps({
-  modelValue: { type: Object, default: null },
-  visible: { type: Boolean, default: false },
-  inline: { type: Boolean, default: false }
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue?: SearchEngine | null;
+    visible?: boolean;
+    inline?: boolean;
+  }>(),
+  { modelValue: null, visible: false, inline: false }
+);
 
-const emit = defineEmits(['update:modelValue', 'update:visible', 'after-select']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', v: SearchEngine | null): void;
+  (e: 'update:visible', v: boolean): void;
+  (e: 'after-select'): void;
+}>();
 
 const customEngines = ref(loadCustomEngines());
-const allEngines = computed(() => [...defaultEngines, ...customEngines.value]);
+const allEngines = computed(() => [...DEFAULT_ENGINES, ...customEngines.value]);
 const currentEngine = computed(() => props.modelValue);
 const pickerRef = ref(null);
 const showAddForm = ref(false);
-const customName = ref('');
-const customUrl = ref('');
 
 const close = () => {
   showAddForm.value = false;
   emit('update:visible', false);
 };
 
-const select = (eng) => {
+const select = (eng: SearchEngine) => {
   if (eng.id && eng.id.startsWith('custom-')) {
     emit('update:modelValue', { id: eng.id, name: eng.name, url: eng.url, icon: eng.icon });
   } else {
@@ -138,27 +176,20 @@ const select = (eng) => {
   emit('after-select');
 };
 
-const cancelAdd = () => {
-  showAddForm.value = false;
-  customName.value = '';
-  customUrl.value = '';
-};
-
-const confirmAdd = () => {
-  const name = customName.value.trim();
-  const url = (customUrl.value.trim() || '').replace(/\{query\}/g, '%s');
-  if (!name || !url || !url.includes('%s')) return;
+function onAddEngine(payload: { name: string; url: string }) {
+  const { name, url } = payload;
   const list = loadCustomEngines();
-  list.push({ name, url });
+  list.push({ id: 'custom-' + list.length, name, url });
   saveCustomEngines(list);
   customEngines.value = loadCustomEngines();
-  cancelAdd();
-};
+  showAddForm.value = false;
+}
 </script>
 
 <style scoped>
 /* 与搜索框统一的毛玻璃风格 */
 .engine-picker {
+  min-width: 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -171,7 +202,9 @@ const confirmAdd = () => {
 /* 内联模式：紧贴搜索框下方，同宽，小间距 */
 .engine-picker-inline {
   width: 100%;
+  min-width: 0;
   margin-top: 10px;
+  overflow: hidden;
 }
 
 .slide-down-enter-active,
@@ -247,11 +280,22 @@ const confirmAdd = () => {
 
 .picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.3); }
 
-.add-form { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
-.add-input { width: 100%; padding: 8px 12px; margin-bottom: 8px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); font-size: 14px; }
-.add-url { font-family: monospace; }
-.add-actions { display: flex; gap: 8px; justify-content: flex-end; }
-.add-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
-.add-btn.cancel { background: rgba(0,0,0,0.08); }
-.add-btn.confirm { background: rgba(0,0,0,0.2); color: #fff; }
+.picker-icon-svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  fill: currentColor;
+  color: rgba(0, 0, 0, 0.65);
+}
+.picker-icon-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  margin-bottom: 4px;
+  filter: grayscale(100%) brightness(0.35) contrast(1.4);
+}
+.picker-icon { font-size: 20px; margin-bottom: 4px; }
+
 </style>

@@ -4,7 +4,7 @@
       ref="wrapperRef"
       class="search-wrapper"
       :class="{ 'focused': isFocused || pickerVisible }"
-      @contextmenu.stop.prevent="openContextMenu"
+      @contextmenu.stop.prevent="onWrapperContextMenu"
       @click="onWrapperClick"
     >
       <div
@@ -12,8 +12,19 @@
         class="engine-trigger"
         @click.stop="onEngineTriggerClick"
         @mousedown.prevent
+        :title="currentEngine?.name"
       >
-        <span class="engine-name">{{ currentEngine.name }}</span>
+        <svg v-if="engineIconfontId" class="engine-icon engine-icon-svg" aria-hidden="true">
+          <use :href="`#${engineIconfontId}`" />
+        </svg>
+        <img
+          v-else-if="engineIconUrl"
+          :src="engineIconUrl"
+          :alt="currentEngine?.name"
+          class="engine-icon"
+          @error="engineIconError = true"
+        />
+        <span v-else class="engine-icon-fallback">{{ engineIconFallback }}</span>
         <span class="engine-chevron">▾</span>
       </div>
       <input
@@ -38,10 +49,14 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, nextTick, onUnmounted, defineEmits, defineProps, computed, watch } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import ContextMenu from './ContextMenu.vue';
 import EnginePicker from './EnginePicker.vue';
+import { getEngineIconUrl, isIconfontSymbol } from '@/utils/engine';
+import { useSelectedEngine } from '@/composables/useSelectedEngine';
+import { useSearchFocus } from '@/composables/useSearchFocus';
+import { useClipboardMenu } from '@/composables/useClipboardMenu';
 
 const props = defineProps({
   shouldFocusOnMount: { type: Boolean, default: true },
@@ -49,81 +64,29 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['focus-change', 'picker-open']);
+
 const query = ref('');
-const isFocused = ref(false);
 const inputRef = ref(null);
 const wrapperRef = ref(null);
 const blockRef = ref(null);
 const contextMenuRef = ref(null);
 const pickerVisible = ref(false);
-const savedSelection = ref({ start: 0, end: 0 });
 
-const defaultEngines = [
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=%s', icon: '🐾' },
-  { id: 'google', name: '谷歌', url: 'https://www.google.com/search?q=%s', icon: 'G' },
-  { id: 'bing', name: '必应', url: 'https://www.bing.com/search?q=%s', icon: 'B' }
-];
+// 选中引擎（持久化）
+const { currentEngine } = useSelectedEngine();
 
-const loadSavedEngine = () => {
-  try {
-    const raw = localStorage.getItem('page-start-selected-engine');
-    if (!raw) return defaultEngines[0];
-    const o = JSON.parse(raw);
-    const found = defaultEngines.find(e => e.id === o?.id) || defaultEngines.find(e => e.name === o?.name);
-    if (found) return found;
-    if (o?.name && o?.url) return { id: 'custom', ...o };
-    return defaultEngines[0];
-  } catch {
-    return defaultEngines[0];
-  }
-};
+// 聚焦/失焦（含切走切回）
+const { isFocused, handleFocus, handleBlur } = useSearchFocus((focused) => {
+  emit('focus-change', focused);
+});
 
-const currentEngine = ref(loadSavedEngine() || defaultEngines[0]);
+// 剪贴板右键菜单
+const { searchMenuItems, openContextMenu: updateSelectionForMenu } = useClipboardMenu(query);
 
-const saveEngine = (eng) => {
-  try {
-    localStorage.setItem('page-start-selected-engine', JSON.stringify({ id: eng?.id, name: eng?.name, url: eng?.url }));
-  } catch (_) {}
-};
-
-const doCopy = () => {
-  const { start, end } = savedSelection.value;
-  const text = query.value.slice(start, end);
-  if (text) navigator.clipboard?.writeText(text).catch(() => {});
-};
-
-const doCut = () => {
-  const { start, end } = savedSelection.value;
-  const text = query.value.slice(start, end);
-  if (text) {
-    navigator.clipboard?.writeText(text).then(() => {
-      query.value = query.value.slice(0, start) + query.value.slice(end);
-    }).catch(() => {});
-  }
-};
-
-const doPaste = async () => {
-  try {
-    const text = await navigator.clipboard?.readText();
-    if (text == null) return;
-    const { start, end } = savedSelection.value;
-    query.value = query.value.slice(0, start) + text + query.value.slice(end);
-  } catch (_) {}
-};
-
-const searchMenuItems = computed(() => [
-  { label: '剪切', shortcut: 'Ctrl+X', action: doCut },
-  { label: '复制', shortcut: 'Ctrl+C', action: doCopy },
-  { label: '粘贴', shortcut: 'Ctrl+V', action: doPaste }
-]);
-
-const openContextMenu = (e) => {
-  const el = inputRef.value;
-  if (el) {
-    savedSelection.value = { start: el.selectionStart, end: el.selectionEnd };
-  }
+function onWrapperContextMenu(e) {
+  updateSelectionForMenu(() => inputRef.value);
   contextMenuRef.value?.showMenu(e);
-};
+}
 
 const onWrapperClick = (e) => {
   if (!isFocused.value && !pickerVisible.value && e.target === wrapperRef.value) {
@@ -136,34 +99,27 @@ const onEngineTriggerClick = () => {
   pickerVisible.value = true;
 };
 
-const handleFocus = () => {
-  if (blurTimeoutId) {
-    clearTimeout(blurTimeoutId);
-    blurTimeoutId = null;
-  }
-  isFocused.value = true;
-  emit('focus-change', true);
-};
-
-// 切走/切回：不改变布局状态。blur 延迟执行，若在延迟内页面被隐藏则取消，保持离开前状态
-let blurTimeoutId = null;
-
-const handleBlur = () => {
-  if (blurTimeoutId) clearTimeout(blurTimeoutId);
-  blurTimeoutId = window.setTimeout(() => {
-    blurTimeoutId = null;
-    if (document.visibilityState === 'hidden') return;
-    isFocused.value = false;
-    emit('focus-change', false);
-  }, 150);
-};
-
-watch(pickerVisible, (v) => emit('picker-open', v));
+// 引擎图标：优先 iconfont（与 kano 一致），否则 favicon，再否则首字
+const engineIconError = ref(false);
+const engineIconfontId = computed(() => {
+  const icon = currentEngine.value?.icon;
+  return icon && isIconfontSymbol(icon) ? icon.trim() : '';
+});
+const engineIconUrl = computed(() => {
+  if (engineIconfontId.value || engineIconError.value) return '';
+  return getEngineIconUrl(currentEngine.value) || '';
+});
+const engineIconFallback = computed(() => {
+  const name = currentEngine.value?.name;
+  return name ? name.slice(0, 1) : '🔍';
+});
+watch(currentEngine, () => { engineIconError.value = false; });
 
 const focusSearchInput = () => {
   nextTick(() => inputRef.value?.focus());
 };
 
+// 点击外部关闭选择器
 let clickOutsideCleanup = null;
 watch(pickerVisible, (visible) => {
   emit('picker-open', visible);
@@ -196,26 +152,9 @@ const handleSearch = () => {
   if (url) window.location.href = url;
 };
 
-const onVisibilityChange = () => {
-  if (document.visibilityState === 'hidden') {
-    if (blurTimeoutId) {
-      clearTimeout(blurTimeoutId);
-      blurTimeoutId = null;
-    }
-  }
-};
-
 onMounted(() => {
-  document.addEventListener('visibilitychange', onVisibilityChange);
   if (props.shouldFocusOnMount) inputRef.value?.focus();
 });
-
-onUnmounted(() => {
-  document.removeEventListener('visibilitychange', onVisibilityChange);
-  if (blurTimeoutId) clearTimeout(blurTimeoutId);
-});
-
-watch(currentEngine, (v) => { if (v) saveEngine(v); }, { deep: true });
 </script>
 
 <style scoped>
@@ -233,12 +172,10 @@ watch(currentEngine, (v) => { if (v) saveEngine(v); }, { deep: true });
   border: 1px solid rgba(255, 255, 255, 0.35);
   transition: box-shadow 0.3s ease, background 0.3s ease;
 }
-
 .search-wrapper.focused {
   background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
-
 .search-input {
   flex: 1;
   min-width: 0;
@@ -251,12 +188,11 @@ watch(currentEngine, (v) => { if (v) saveEngine(v); }, { deep: true });
 }
 .search-input::placeholder { color: rgba(0, 0, 0, 0.45); }
 .search-input.single { text-align: center; }
-
 .engine-trigger {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px 8px 4px;
+  gap: 6px;
+  padding: 6px 10px 6px 4px;
   margin-right: 4px;
   border-right: 1px solid rgba(0, 0, 0, 0.12);
   cursor: pointer;
@@ -265,8 +201,31 @@ watch(currentEngine, (v) => { if (v) saveEngine(v); }, { deep: true });
   user-select: none;
 }
 .engine-trigger:hover { color: rgba(0, 0, 0, 0.9); }
+.engine-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: contain;
+  display: block;
+  filter: grayscale(100%) brightness(0.35) contrast(1.4);
+}
+.engine-icon-svg {
+  flex-shrink: 0;
+  fill: currentColor;
+  color: rgba(0, 0, 0, 0.6);
+  filter: none;
+}
+.engine-icon-fallback {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+}
 .engine-chevron { font-size: 10px; opacity: 0.8; }
-
 .search-block {
   display: flex;
   flex-direction: column;

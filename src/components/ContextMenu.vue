@@ -1,15 +1,15 @@
 <template>
   <teleport to="body">
-    <div 
+    <div
       v-show="visible"
       class="context-menu"
       :style="{ top: `${position.y}px`, left: `${position.x}px` }"
       @click.stop
     >
       <slot>
-        <div 
-          v-for="(item, index) in menuItems" 
-          :key="index" 
+        <div
+          v-for="(item, index) in props.menuItems"
+          :key="index"
           class="menu-item"
           @click="() => { item.action(); hideMenu(); }"
         >
@@ -21,34 +21,31 @@
   </teleport>
 </template>
 
-<script>
-export default {
-  props: {
-    menuItems: {
-      type: Array,
-      default: () => []
-    }
-  },
-  data() {
-    return {
-      visible: false,
-      position: { x: 0, y: 0 }
-    }
-  },
-  methods: {
-    showMenu(event) {
-      this.position = { x: event.clientX, y: event.clientY }
-      this.visible = true
-      document.addEventListener('click', this.hideMenu)
-      document.addEventListener('contextmenu', this.hideMenu)
-    },
-    hideMenu() {
-      this.visible = false
-      document.removeEventListener('click', this.hideMenu)
-      document.removeEventListener('contextmenu', this.hideMenu)
-    }
-  }
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { ContextMenuItem } from '@/types';
+
+const props = withDefaults(defineProps<{ menuItems?: ContextMenuItem[] }>(), {
+  menuItems: (): ContextMenuItem[] => []
+});
+
+const visible = ref(false);
+const position = ref({ x: 0, y: 0 });
+
+function hideMenu() {
+  visible.value = false;
+  document.removeEventListener('click', hideMenu);
+  document.removeEventListener('contextmenu', hideMenu);
 }
+
+function showMenu(event: MouseEvent) {
+  position.value = { x: event.clientX, y: event.clientY };
+  visible.value = true;
+  document.addEventListener('click', hideMenu);
+  document.addEventListener('contextmenu', hideMenu);
+}
+
+defineExpose({ showMenu });
 </script>
 
 <style scoped>

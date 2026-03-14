@@ -9,12 +9,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useConfigStore } from '@/store/config.js';
+import { useConfigStore } from '@/store/config';
 
-const emit = defineEmits(['blur-search']);
+const emit = defineEmits<{ (e: 'blur-search'): void }>();
 
 const config = useConfigStore();
 const { timeFormat24, timeShowSeconds, timeFontSize, timeFontWeight, timeFontStyle } = storeToRefs(config);
@@ -48,7 +48,7 @@ const weightClass = computed(() => `weight-${timeFontWeight.value}`);
 const styleClass = computed(() => `style-${timeFontStyle.value}`);
 
 const intervalMs = computed(() => (timeShowSeconds.value ? 1000 : 60000));
-let timer = null;
+let timer: ReturnType<typeof setInterval> | null = null;
 
 function startTimer() {
   if (timer) clearInterval(timer);

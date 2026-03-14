@@ -8,8 +8,8 @@
   </div>
 </template>
 
-<script setup>
-const shortcuts = [
+<script setup lang="ts">
+const shortcuts: { name: string; icon: string }[] = [
   { name: '云音乐', icon: '🎵' }, { name: 'bilibili', icon: '📺' },
   { name: '壁纸', icon: '🎨' }, { name: '深色主题', icon: '☀️' }
 ];
