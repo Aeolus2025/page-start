@@ -6,10 +6,6 @@
       class="engine-picker engine-picker-inline"
       @contextmenu.stop.prevent
     >
-      <div class="picker-header">
-        <span class="current-label">在 {{ currentEngine?.name }} 上搜索</span>
-        <span class="search-hint">🔍</span>
-      </div>
       <div class="picker-grid">
         <div
           v-for="eng in allEngines"
@@ -53,10 +49,6 @@
         @click.self="close"
       >
         <div class="engine-picker">
-          <div class="picker-header">
-            <span class="current-label">在 {{ currentEngine?.name }} 上搜索</span>
-            <span class="search-hint">🔍</span>
-          </div>
           <div class="picker-grid">
             <div
               v-for="eng in allEngines"
@@ -246,13 +238,6 @@ function onAddEngine(payload: { name: string; url: string }) {
 .slide-up-enter-to .engine-picker,
 .slide-up-leave-from .engine-picker {
   transform: translateY(0);
-}
-
-.picker-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; margin-bottom: 12px;
-  color: rgba(0, 0, 0, 0.75);
-  font-size: 14px;
 }
 
 .picker-grid {

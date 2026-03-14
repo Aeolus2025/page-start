@@ -192,9 +192,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px 6px 4px;
-  margin-right: 4px;
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 6px 8px 6px 2px;
+  margin-right: 2px;
   cursor: pointer;
   color: rgba(0, 0, 0, 0.75);
   font-size: 14px;
