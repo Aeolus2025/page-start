@@ -1,15 +1,31 @@
 <template>
-  <div class="clock">{{ currentTime }}</div>
+  <div 
+    class="clock"
+    @contextmenu.stop.prevent
+    @click="handleClick"
+  >
+    {{ currentTime }}
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+
+const emit = defineEmits(['blur-search']);
+
 const currentTime = ref('');
 const updateTime = () => {
   const now = new Date();
   currentTime.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 };
+
 let timer = setInterval(updateTime, 1000);
+
+// 左键点击时钟（如失焦搜索等）
+const handleClick = () => {
+  emit('blur-search');
+};
+
 onMounted(updateTime);
 onUnmounted(() => clearInterval(timer));
 </script>
