@@ -137,6 +137,10 @@ const onEngineTriggerClick = () => {
 };
 
 const handleFocus = () => {
+  if (blurTimeoutId) {
+    clearTimeout(blurTimeoutId);
+    blurTimeoutId = null;
+  }
   isFocused.value = true;
   emit('focus-change', true);
 };

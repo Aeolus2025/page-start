@@ -1,6 +1,6 @@
 <template>
   <div class="container" @contextmenu.prevent="(e) => showShortcutPanel ? e.preventDefault() : onContainerContextMenu(e)">
-    <div class="background-layer" :class="{ 'is-blur': searchFocused || showShortcutPanel }"></div>
+    <div class="background-layer" :class="{ 'is-blur': searchFocused || showShortcutPanel }" :style="backgroundStyle"></div>
 
     <!-- 时钟+搜索：始终显示；聚焦或任意面板打开时整体上移 -->
     <div class="content-layer" :class="{ 'shifted': contentShifted }">
@@ -10,7 +10,7 @@
         <!-- 未打开快捷面板：显示搜索框 -->
         <SearchBar
           v-if="!showShortcutPanel"
-          :should-focus-on-mount="!panelJustClosed"
+          :should-focus-on-mount="focusSearchOnMount"
           :shortcut-panel-open="showShortcutPanel"
           @focus-change="handleFocusChange"
           @picker-open="handlePickerOpen"
@@ -32,18 +32,35 @@
       <DigitalClock />
     </div>
 
-    <!-- 设置按钮：快捷面板打开时显示 -->
-    <div class="settings-fab" v-if="showShortcutPanel" @click="openSettings">⚙️</div>
+    <!-- 设置按钮：右上角常显 -->
+    <div class="settings-fab" @click="openSettings" title="设置">⚙️</div>
+
+    <SettingsPanel :visible="settingsVisible" @close="settingsVisible = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, watch, onUnmounted } from 'vue';
+import { ref, nextTick, watch, onUnmounted, computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useConfigStore } from '@/store/config.js';
 import DigitalClock from './components/DigitalClock.vue';
 import SearchBar from './components/SearchBar.vue';
 import ShortcutGrid from './components/ShortcutGrid.vue';
+import SettingsPanel from './components/SettingsPanel.vue';
+
+const config = useConfigStore();
+const { focusSearchOnLoad } = storeToRefs(config);
+
+const focusSearchOnMount = computed(() => {
+  return focusSearchOnLoad.value && !panelJustClosed.value;
+});
+
+const backgroundStyle = computed(() => ({
+  backgroundImage: `url(${config.backgroundUrl})`,
+}));
 
 const searchFocused = ref(false);
+const settingsVisible = ref(false);
 const showShortcutPanel = ref(false);
 const panelJustClosed = ref(false);
 const pickerOpen = ref(false);
@@ -135,7 +152,7 @@ const closeShortcutPanel = () => {
 };
 
 const openSettings = () => {
-  console.log('打开设置');
+  settingsVisible.value = true;
 };
 </script>
 
@@ -147,8 +164,9 @@ body, html, #app { margin: 0; padding: 0; height: 100%; width: 100%; overflow: h
 
 .background-layer {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  /* background: url('/background.jpg') no-repeat center center/cover; */
-  background: url('/image.png') no-repeat center center/cover;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   transition: all 0.5s ease; z-index: 1;
 }
 .background-layer.is-blur { filter: brightness(0.7) blur(15px); transform: scale(1.05); }
