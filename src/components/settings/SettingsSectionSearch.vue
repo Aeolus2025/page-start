@@ -8,6 +8,20 @@
         <span class="switch-slider"></span>
       </label>
     </div>
+    <div class="option-row">
+      <span class="option-label">启用搜索历史</span>
+      <label class="switch-label">
+        <input type="checkbox" :checked="config.searchHistoryEnabled" @change="onSearchHistoryChange" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div class="option-row">
+      <span class="option-label">在新标签页打开搜索结果</span>
+      <label class="switch-label">
+        <input type="checkbox" :checked="config.openSearchInNewTab" @change="onOpenSearchInNewTabChange" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
   </section>
 </template>
 
@@ -18,6 +32,14 @@ const config = useConfigStore();
 
 function onFocusSearchOnLoadChange(e: Event) {
   config.setFocusSearchOnLoad((e.target as HTMLInputElement).checked);
+}
+
+function onSearchHistoryChange(e: Event) {
+  config.setSearchHistoryEnabled((e.target as HTMLInputElement).checked);
+}
+
+function onOpenSearchInNewTabChange(e: Event) {
+  config.setOpenSearchInNewTab((e.target as HTMLInputElement).checked);
 }
 </script>
 

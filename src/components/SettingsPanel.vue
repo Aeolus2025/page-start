@@ -11,6 +11,9 @@
             <SettingsSectionBackground />
             <SettingsSectionClock />
             <SettingsSectionSearch />
+            <section class="settings-section settings-section-actions">
+              <button type="button" class="btn-reset-defaults" @click="resetToDefaults">恢复默认配置</button>
+            </section>
           </div>
         </div>
       </div>
@@ -22,13 +25,19 @@
 import SettingsSectionBackground from './settings/SettingsSectionBackground.vue';
 import SettingsSectionClock from './settings/SettingsSectionClock.vue';
 import SettingsSectionSearch from './settings/SettingsSectionSearch.vue';
+import { useConfigStore } from '@/store/config';
 
 withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });
 
 const emit = defineEmits<{ (e: 'close'): void }>();
+const config = useConfigStore();
 
 function close() {
   emit('close');
+}
+
+function resetToDefaults() {
+  config.resetToDefaults();
 }
 </script>
 
@@ -102,6 +111,28 @@ function close() {
 
 .settings-section:last-child {
   margin-bottom: 0;
+}
+
+.settings-section-actions {
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.btn-reset-defaults {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-reset-defaults:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .section-title {

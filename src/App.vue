@@ -25,7 +25,9 @@
       <DigitalClock />
     </div>
 
-    <div class="settings-fab" @click="openSettings" title="设置">⚙️</div>
+    <Transition name="fade">
+      <div v-if="showShortcutPanel" class="settings-fab" @click="openSettings" title="设置"><i class="iconfont icon-shezhi"></i></div>
+    </Transition>
     <SettingsPanel :visible="settingsVisible" @close="settingsVisible = false" />
   </div>
 </template>
@@ -147,4 +149,10 @@ body, html, #app { margin: 0; padding: 0; height: 100%; width: 100%; overflow: h
 .slide-down-leave-to { opacity: 0; transform: translateY(-8px); }
 .slide-down-enter-to,
 .slide-down-leave-from { opacity: 1; transform: translateY(0); }
+.fade-enter-active,
+.fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from,
+.fade-leave-to { opacity: 0; }
+.fade-enter-to,
+.fade-leave-from { opacity: 1; }
 </style>

@@ -22,6 +22,9 @@ export interface ConfigState {
   timeFontWeight: 'normal' | 'bold';
   timeFontStyle: 'normal' | 'italic' | 'script';
   focusSearchOnLoad: boolean;
+  searchHistoryEnabled: boolean;
+  /** 搜索结果在新标签页打开，否则当前页跳转 */
+  openSearchInNewTab: boolean;
 }
 
 /** 右键菜单项 */
