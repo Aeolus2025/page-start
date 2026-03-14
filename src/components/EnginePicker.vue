@@ -259,9 +259,9 @@ function onAddEngine(payload: { name: string; url: string }) {
 .picker-item.is-current { background: rgba(255, 255, 255, 0.4); }
 
 .picker-icon { font-size: 20px; margin-bottom: 4px; }
-.picker-name { font-size: 13px; color: rgba(0, 0, 0, 0.85); }
+.picker-name { font-size: 13px; color: rgba(0, 0, 0, 0.9); }
 
-.picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.3); }
+.picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.35); }
 
 .picker-icon-svg {
   width: 28px;
@@ -269,7 +269,7 @@ function onAddEngine(payload: { name: string; url: string }) {
   margin-bottom: 4px;
   flex-shrink: 0;
   fill: currentColor;
-  color: rgba(0, 0, 0, 0.65);
+  color: rgba(0, 0, 0, 0.78);
 }
 .picker-icon-img {
   width: 28px;

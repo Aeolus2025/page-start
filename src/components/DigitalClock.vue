@@ -73,8 +73,8 @@ onUnmounted(() => {
 
 <style scoped>
 .clock {
-  color: white;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.98);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.3);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   letter-spacing: -1px;
   margin: 0;

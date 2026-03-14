@@ -74,7 +74,7 @@ defineExpose({ showMenu });
 }
 
 .menu-shortcut {
-  color: #999;
+  color: #666;
   font-size: 12px;
 }
 </style>

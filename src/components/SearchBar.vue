@@ -5,7 +5,7 @@
         ref="wrapperRef"
         class="search-wrapper"
         :class="{ 'focused': isFocused || pickerVisible }"
-        @contextmenu.stop.prevent="onWrapperContextMenu"
+        @contextmenu.stop
         @click="onWrapperClick"
       >
         <div
@@ -56,9 +56,22 @@
               role="option"
               @mousedown="onHistorySelect(item)"
             >
-              {{ item }}
+              <span class="search-history-item-text">{{ item }}</span>
+              <i
+                class="iconfont icon-cha search-history-item-remove"
+                aria-label="删除"
+                @mousedown.stop.prevent="removeHistoryItem(item)"
+              />
             </li>
           </ul>
+          <button
+            type="button"
+            class="search-history-clear"
+            @mousedown.prevent="clearHistory"
+          >
+            <i class="iconfont icon-top" aria-hidden="true"></i>
+            <span>清除历史记录</span>
+          </button>
         </div>
       </Transition>
     </div>
@@ -102,7 +115,7 @@ const { currentEngine } = useSelectedEngine();
 const { isFocused, handleFocus, handleBlur } = useSearchFocus((focused) => {
   emit('focus-change', focused);
 });
-const { history: searchHistory, addHistory } = useSearchHistory();
+const { history: searchHistory, addHistory, clearHistory, removeItem: removeHistoryItem } = useSearchHistory();
 const showHistoryDropdown = computed(() => (isFocused.value || pickerVisible.value) && config.searchHistoryEnabled && !pickerVisible.value);
 const historyList = computed(() => searchHistory.value);
 
@@ -258,14 +271,14 @@ onMounted(() => {
   background: transparent;
   padding: 10px 12px;
   font-size: 15px;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgba(0, 0, 0, 0.92);
 }
-.search-input::placeholder { color: rgba(0, 0, 0, 0.45); }
+.search-input::placeholder { color: rgba(0, 0, 0, 0.6); }
 .search-input.single { text-align: center; }
 .search-icon {
   flex-shrink: 0;
   font-size: 18px;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(0, 0, 0, 0.68);
   margin-left: 4px;
 }
 .engine-trigger {
@@ -275,11 +288,11 @@ onMounted(() => {
   padding: 6px 8px 6px 2px;
   margin-right: 2px;
   cursor: pointer;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 14px;
   user-select: none;
 }
-.engine-trigger:hover { color: rgba(0, 0, 0, 0.9); }
+.engine-trigger:hover { color: rgba(0, 0, 0, 0.95); }
 .engine-icon {
   width: 22px;
   height: 22px;
@@ -291,7 +304,7 @@ onMounted(() => {
 .engine-icon-svg {
   flex-shrink: 0;
   fill: currentColor;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.75);
   filter: none;
 }
 .engine-icon-fallback {
@@ -302,7 +315,7 @@ onMounted(() => {
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.82);
 }
 .engine-chevron { font-size: 10px; opacity: 0.8; }
 .search-block {
@@ -324,11 +337,13 @@ onMounted(() => {
   position: absolute;
   top: 100%;
   left: 0;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   margin-top: 6px;
-  max-height: 200px;
-  overflow-y: auto;
+  max-height: 280px;
   border-radius: 24px;
+  overflow: hidden;
   background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -340,16 +355,60 @@ onMounted(() => {
   margin: 0;
   padding: 8px 0;
   list-style: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 .search-history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 20px;
   font-size: 15px;
-  color: rgba(0, 0, 0, 0.88);
+  color: rgba(0, 0, 0, 0.92);
   cursor: pointer;
   transition: background 0.15s;
 }
 .search-history-item:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+.search-history-item-text {
+  flex: 1;
+  min-width: 0;
+}
+.search-history-item-remove {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  padding: 2px;
+  transition: color 0.15s;
+}
+.search-history-item-remove:hover {
+  color: rgba(0, 0, 0, 0.9);
+}
+.search-history-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 20px;
+  margin: 0;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.82);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.search-history-clear:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(0, 0, 0, 0.95);
+}
+.search-history-clear .iconfont {
+  font-size: 16px;
 }
 .history-drop-enter-active,
 .history-drop-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }

@@ -51,7 +51,7 @@ function onOpenSearchInNewTabChange(e: Event) {
   gap: 16px;
   padding: 10px 0;
 }
-.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.8); }
+.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.88); }
 .switch-label {
   position: relative;
   display: inline-block;

@@ -45,5 +45,12 @@ export function useSearchHistory() {
     saveHistory([]);
   }
 
-  return { history, addHistory, clearHistory };
+  /** 删除单条历史记录 */
+  function removeItem(keyword: string) {
+    const next = list.value.filter((x) => x !== keyword);
+    list.value = next;
+    saveHistory(next);
+  }
+
+  return { history, addHistory, clearHistory, removeItem };
 }

@@ -79,7 +79,7 @@ function resetToDefaults() {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.92);
 }
 
 .settings-close {
@@ -88,7 +88,7 @@ function resetToDefaults() {
   border: none;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.72);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -122,7 +122,7 @@ function resetToDefaults() {
   width: 100%;
   padding: 10px 16px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.82);
   background: rgba(0, 0, 0, 0.06);
   border: none;
   border-radius: 10px;
@@ -132,14 +132,14 @@ function resetToDefaults() {
 
 .btn-reset-defaults:hover {
   background: rgba(0, 0, 0, 0.1);
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.92);
 }
 
 .section-title {
   margin: 0 0 12px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.65);
+  color: rgba(0, 0, 0, 0.78);
 }
 
 .settings-fade-enter-active,

@@ -22,7 +22,8 @@ const shortcuts: { name: string; icon: string }[] = [
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 20px; display: flex; flex-direction: column;
-  justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.95);
+  justify-content: center; align-items: center; color: rgba(255, 255, 255, 0.98);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(8px); cursor: pointer; transition: 0.25s;
 }
 .card:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }

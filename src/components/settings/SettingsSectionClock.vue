@@ -76,14 +76,14 @@ function onTimeFontStyleChange(e: Event) {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 .option-row:last-child { border-bottom: none; }
-.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.8); }
+.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.88); }
 .option-group { display: flex; gap: 16px; }
 .radio-label {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.85);
   cursor: pointer;
 }
 .radio-label input { cursor: pointer; }
@@ -119,9 +119,9 @@ function onTimeFontStyleChange(e: Event) {
 .select {
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.9);
   background: white;
   cursor: pointer;
   min-width: 100px;
