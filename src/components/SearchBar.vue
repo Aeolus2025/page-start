@@ -66,10 +66,10 @@ const props = defineProps({
 const emit = defineEmits(['focus-change', 'picker-open']);
 
 const query = ref('');
-const inputRef = ref(null);
-const wrapperRef = ref(null);
-const blockRef = ref(null);
-const contextMenuRef = ref(null);
+const inputRef = ref<HTMLInputElement | null>(null);
+const wrapperRef = ref<HTMLElement | null>(null);
+const blockRef = ref<HTMLElement | null>(null);
+const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null);
 const pickerVisible = ref(false);
 
 // 选中引擎（持久化）
@@ -83,12 +83,12 @@ const { isFocused, handleFocus, handleBlur } = useSearchFocus((focused) => {
 // 剪贴板右键菜单
 const { searchMenuItems, openContextMenu: updateSelectionForMenu } = useClipboardMenu(query);
 
-function onWrapperContextMenu(e) {
+function onWrapperContextMenu(e: MouseEvent) {
   updateSelectionForMenu(() => inputRef.value);
   contextMenuRef.value?.showMenu(e);
 }
 
-const onWrapperClick = (e) => {
+const onWrapperClick = (e: MouseEvent) => {
   if (!isFocused.value && !pickerVisible.value && e.target === wrapperRef.value) {
     inputRef.value?.focus();
   }
@@ -120,7 +120,7 @@ const focusSearchInput = () => {
 };
 
 // 点击外部关闭选择器
-let clickOutsideCleanup = null;
+let clickOutsideCleanup: (() => void) | null = null;
 watch(pickerVisible, (visible) => {
   emit('picker-open', visible);
   if (clickOutsideCleanup) {
@@ -130,8 +130,8 @@ watch(pickerVisible, (visible) => {
   if (visible) {
     nextTick(() => {
       inputRef.value?.focus();
-      const onDocClick = (e) => {
-        if (blockRef.value && !blockRef.value.contains(e.target)) {
+      const onDocClick = (e: MouseEvent) => {
+        if (blockRef.value && !blockRef.value.contains(e.target as Node)) {
           pickerVisible.value = false;
         }
       };

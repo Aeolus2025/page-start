@@ -4,7 +4,6 @@
     <div
       v-if="visible"
       class="engine-picker engine-picker-inline"
-      ref="pickerRef"
       @contextmenu.stop.prevent
     >
       <div class="picker-header">
@@ -53,7 +52,7 @@
         class="engine-picker-overlay"
         @click.self="close"
       >
-        <div class="engine-picker" ref="pickerRef">
+        <div class="engine-picker">
           <div class="picker-header">
             <span class="current-label">在 {{ currentEngine?.name }} 上搜索</span>
             <span class="search-hint">🔍</span>
@@ -158,7 +157,6 @@ const emit = defineEmits<{
 const customEngines = ref(loadCustomEngines());
 const allEngines = computed(() => [...DEFAULT_ENGINES, ...customEngines.value]);
 const currentEngine = computed(() => props.modelValue);
-const pickerRef = ref(null);
 const showAddForm = ref(false);
 
 const close = () => {
