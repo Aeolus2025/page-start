@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
-import type { ConfigState } from '@/types';
+import type { ConfigState, ExportPayload } from '@/types';
 
 const defaultBg = '/image.png';
 
@@ -14,7 +14,8 @@ export const DEFAULT_CONFIG: ConfigState = {
   timeFontStyle: 'normal',
   focusSearchOnLoad: true,
   searchHistoryEnabled: true,
-  openSearchInNewTab: false
+  openSearchInNewTab: false,
+  exportIncludeBackground: true
 };
 
 function readBool(key: string, defaultValue: boolean): boolean {
@@ -39,7 +40,8 @@ export const useConfigStore = defineStore('config', {
       timeFontStyle: (readStr('timeFontStyle', DEFAULT_CONFIG.timeFontStyle) as ConfigState['timeFontStyle']) || DEFAULT_CONFIG.timeFontStyle,
       focusSearchOnLoad: readBool('focusSearchOnLoad', DEFAULT_CONFIG.focusSearchOnLoad),
       searchHistoryEnabled: readBool('searchHistoryEnabled', DEFAULT_CONFIG.searchHistoryEnabled),
-      openSearchInNewTab: readBool('openSearchInNewTab', DEFAULT_CONFIG.openSearchInNewTab)
+      openSearchInNewTab: readBool('openSearchInNewTab', DEFAULT_CONFIG.openSearchInNewTab),
+      exportIncludeBackground: readBool('exportIncludeBackground', DEFAULT_CONFIG.exportIncludeBackground)
     };
   },
   getters: {
@@ -95,6 +97,10 @@ export const useConfigStore = defineStore('config', {
       this.openSearchInNewTab = Boolean(value);
       setItem('openSearchInNewTab', this.openSearchInNewTab);
     },
+    setExportIncludeBackground(value: boolean) {
+      this.exportIncludeBackground = Boolean(value);
+      setItem('exportIncludeBackground', this.exportIncludeBackground);
+    },
     /** 恢复所有配置为默认值并持久化 */
     resetToDefaults() {
       this.backgroundImage = DEFAULT_CONFIG.backgroundImage;
@@ -106,6 +112,7 @@ export const useConfigStore = defineStore('config', {
       this.focusSearchOnLoad = DEFAULT_CONFIG.focusSearchOnLoad;
       this.searchHistoryEnabled = DEFAULT_CONFIG.searchHistoryEnabled;
       this.openSearchInNewTab = DEFAULT_CONFIG.openSearchInNewTab;
+      this.exportIncludeBackground = DEFAULT_CONFIG.exportIncludeBackground;
       setItem('backgroundImage', this.backgroundImage);
       setItem('timeFormat24', this.timeFormat24);
       setItem('timeShowSeconds', this.timeShowSeconds);
@@ -115,7 +122,97 @@ export const useConfigStore = defineStore('config', {
       setItem('focusSearchOnLoad', this.focusSearchOnLoad);
       setItem('searchHistoryEnabled', this.searchHistoryEnabled);
       setItem('openSearchInNewTab', this.openSearchInNewTab);
+      setItem('exportIncludeBackground', this.exportIncludeBackground);
       setItem('hiddenEngineIds', '[]');
+    },
+    /** 导出配置为 JSON 对象（含 config、hiddenEngineIds、customEngines） */
+    exportConfig(): ExportPayload {
+      const rawHidden = getItem('hiddenEngineIds');
+      const rawCustom = getItem('custom-engines');
+      const configSnapshot = { ...this.$state };
+      if (!this.exportIncludeBackground) {
+        configSnapshot.backgroundImage = '';
+      }
+      return {
+        version: 1,
+        config: configSnapshot,
+        hiddenEngineIds: (() => {
+          try {
+            const a = rawHidden == null ? [] : JSON.parse(rawHidden as string);
+            return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string') : [];
+          } catch {
+            return [];
+          }
+        })(),
+        customEngines: (() => {
+          try {
+            const a = rawCustom == null ? [] : JSON.parse(rawCustom as string);
+            return Array.isArray(a) ? a.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string') : [];
+          } catch {
+            return [];
+          }
+        })()
+      };
+    },
+    /** 导入配置；返回 true 表示成功，建议调用后刷新页面以使引擎等生效 */
+    importConfig(data: unknown): boolean {
+      if (!data || typeof data !== 'object') return false;
+      const d = data as Record<string, unknown>;
+      if (d.version !== 1) return false;
+      const config = d.config as Record<string, unknown> | undefined;
+      if (config && typeof config === 'object') {
+        if (typeof config.backgroundImage === 'string') {
+          this.backgroundImage = config.backgroundImage;
+          setItem('backgroundImage', this.backgroundImage);
+        }
+        if (typeof config.timeFormat24 === 'boolean') {
+          this.timeFormat24 = config.timeFormat24;
+          setItem('timeFormat24', this.timeFormat24);
+        }
+        if (typeof config.timeShowSeconds === 'boolean') {
+          this.timeShowSeconds = config.timeShowSeconds;
+          setItem('timeShowSeconds', this.timeShowSeconds);
+        }
+        if (['small', 'medium', 'large'].includes(config.timeFontSize as string)) {
+          this.timeFontSize = config.timeFontSize as ConfigState['timeFontSize'];
+          setItem('timeFontSize', this.timeFontSize);
+        }
+        if (config.timeFontWeight === 'bold' || config.timeFontWeight === 'normal') {
+          this.timeFontWeight = config.timeFontWeight;
+          setItem('timeFontWeight', this.timeFontWeight);
+        }
+        if (['normal', 'italic', 'script'].includes(config.timeFontStyle as string)) {
+          this.timeFontStyle = config.timeFontStyle as ConfigState['timeFontStyle'];
+          setItem('timeFontStyle', this.timeFontStyle);
+        }
+        if (typeof config.focusSearchOnLoad === 'boolean') {
+          this.focusSearchOnLoad = config.focusSearchOnLoad;
+          setItem('focusSearchOnLoad', this.focusSearchOnLoad);
+        }
+        if (typeof config.searchHistoryEnabled === 'boolean') {
+          this.searchHistoryEnabled = config.searchHistoryEnabled;
+          setItem('searchHistoryEnabled', this.searchHistoryEnabled);
+        }
+        if (typeof config.openSearchInNewTab === 'boolean') {
+          this.openSearchInNewTab = config.openSearchInNewTab;
+          setItem('openSearchInNewTab', this.openSearchInNewTab);
+        }
+        if (typeof config.exportIncludeBackground === 'boolean') {
+          this.exportIncludeBackground = config.exportIncludeBackground;
+          setItem('exportIncludeBackground', this.exportIncludeBackground);
+        }
+      }
+      const hidden = d.hiddenEngineIds;
+      if (Array.isArray(hidden)) {
+        const ids = hidden.filter((x): x is string => typeof x === 'string');
+        setItem('hiddenEngineIds', JSON.stringify(ids));
+      }
+      const custom = d.customEngines;
+      if (Array.isArray(custom)) {
+        const list = custom.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string');
+        setItem('custom-engines', JSON.stringify(list));
+      }
+      return true;
     }
   }
 });

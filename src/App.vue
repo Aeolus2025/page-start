@@ -62,7 +62,12 @@ function updateShifted() {
   contentShifted.value = searchFocused.value || showShortcutPanel.value || pickerOpen.value;
 }
 
-watch(showShortcutPanel, updateShifted);
+watch(showShortcutPanel, (visible) => {
+  if (!visible) {
+    searchFocused.value = false;
+  }
+  updateShifted();
+});
 
 function handleFocusChange(status: boolean) {
   searchFocused.value = status;

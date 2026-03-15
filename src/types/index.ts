@@ -13,6 +13,14 @@ export interface ValidateResult {
   message?: string;
 }
 
+/** 导出配置的 JSON 结构 */
+export interface ExportPayload {
+  version: number;
+  config: ConfigState;
+  hiddenEngineIds: string[];
+  customEngines: { name: string; url: string }[];
+}
+
 /** 配置 store 的 state 类型 */
 export interface ConfigState {
   backgroundImage: string;
@@ -25,6 +33,8 @@ export interface ConfigState {
   searchHistoryEnabled: boolean;
   /** 搜索结果在新标签页打开，否则当前页跳转 */
   openSearchInNewTab: boolean;
+  /** 导出配置时是否包含背景图（方案 C），默认 true */
+  exportIncludeBackground: boolean;
 }
 
 /** 右键菜单项 */

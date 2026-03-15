@@ -188,7 +188,7 @@ onMounted(() => {
 .search-wrapper.focused {
   background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding-left: 1px;
+  padding-left: 9px;
 }
 .search-input-area {
   flex: 1;
@@ -214,7 +214,7 @@ onMounted(() => {
   width: 44px;
   height: 48px;
   margin-left: auto;
-  margin-right: -19px;
+  margin-right: -9px;
   display: flex;
   align-items: center;
   justify-content: center;
