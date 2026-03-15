@@ -115,6 +115,7 @@ export const useConfigStore = defineStore('config', {
       setItem('focusSearchOnLoad', this.focusSearchOnLoad);
       setItem('searchHistoryEnabled', this.searchHistoryEnabled);
       setItem('openSearchInNewTab', this.openSearchInNewTab);
+      setItem('hiddenEngineIds', '[]');
     }
   }
 });

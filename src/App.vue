@@ -3,7 +3,9 @@
     <div class="background-layer" :class="{ 'is-blur': searchFocused || showShortcutPanel }" :style="backgroundStyle"></div>
 
     <div class="content-layer" :class="{ 'shifted': contentShifted }">
-      <div class="clock-spacer" aria-hidden="true"></div>
+      <div class="clock-column">
+        <DigitalClock />
+      </div>
       <div class="search-gap" aria-hidden="true"></div>
       <div class="content-block" ref="contentBlockRef">
         <SearchBar
@@ -19,10 +21,6 @@
           </div>
         </Transition>
       </div>
-    </div>
-
-    <div class="clock-layer" :class="{ 'shifted': contentShifted }">
-      <DigitalClock />
     </div>
 
     <Transition name="fade">
@@ -50,7 +48,6 @@ const {
   showShortcutPanel,
   panelJustClosed,
   openShortcutPanel,
-  closeShortcutPanel
 } = useShortcutPanel(contentBlockRef);
 
 const focusSearchOnMount = computed(() => focusSearchOnLoad.value && !panelJustClosed.value);
@@ -67,17 +64,17 @@ function updateShifted() {
 
 watch(showShortcutPanel, updateShifted);
 
-function handleFocusChange(status) {
+function handleFocusChange(status: boolean) {
   searchFocused.value = status;
   updateShifted();
 }
 
-function handlePickerOpen(open) {
+function handlePickerOpen(open: boolean) {
   pickerOpen.value = open;
   updateShifted();
 }
 
-function handleContainerContextMenu(e) {
+function handleContainerContextMenu(_e: MouseEvent) {
   if (showShortcutPanel.value) return;
   if (pickerOpen.value) return;
   openShortcutPanel();
@@ -90,10 +87,10 @@ function openSettings() {
 </script>
 
 <style>
-body, html, #app { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
-.container { position: relative; height: 100vh; width: 100vw; }
+body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; overflow-y: overlay; }
+.container { position: relative; min-height: 100vh; width: 100%; }
 .background-layer {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -101,13 +98,29 @@ body, html, #app { margin: 0; padding: 0; height: 100%; width: 100%; overflow: h
 }
 .background-layer.is-blur { filter: brightness(0.7) blur(15px); transform: scale(1.05); }
 .content-layer {
-  position: absolute; top: 0; width: 100%; height: 100%;
-  display: flex; flex-direction: column; align-items: center;
-  padding-top: 28vh; z-index: 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 28vh;
+  padding-bottom: 2rem;
+  z-index: 2;
   transition: padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .content-layer.shifted { padding-top: 18vh; }
-.clock-spacer { height: 4rem; flex-shrink: 0; }
+/* 恢复搜索框到原始位置（以默认/中等时钟 4rem 为准）；固定高度+时钟居中，仅时钟位移、搜索框不动 */
+.clock-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 520px;
+  height: 4rem;
+  min-height: 4rem;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow: visible;
+}
 .content-layer .search-gap { height: 1.5rem; flex-shrink: 0; }
 .content-block {
   display: flex;
@@ -115,15 +128,8 @@ body, html, #app { margin: 0; padding: 0; height: 100%; width: 100%; overflow: h
   align-items: stretch;
   width: 100%;
   max-width: 520px;
+  box-sizing: border-box;
 }
-.clock-layer {
-  position: absolute; top: 0; width: 100%; height: 100%;
-  display: flex; flex-direction: column; align-items: center;
-  padding-top: 28vh; z-index: 4; pointer-events: none;
-  transition: padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.clock-layer.shifted { padding-top: 18vh; }
-.clock-layer > * { pointer-events: auto; }
 .settings-fab {
   position: fixed; top: 16px; right: 16px; z-index: 5;
   width: 40px; height: 40px; border-radius: 50%;

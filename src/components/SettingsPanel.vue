@@ -12,7 +12,7 @@
             <SettingsSectionClock />
             <SettingsSectionSearch />
             <section class="settings-section settings-section-actions">
-              <button type="button" class="btn-reset-defaults" @click="resetToDefaults">恢复默认配置</button>
+              <button type="button" class="btn-reset-defaults" @click="resetToDefaults">恢复所有默认配置</button>
             </section>
           </div>
         </div>

@@ -7,31 +7,35 @@
       @contextmenu.stop.prevent
     >
       <div class="picker-grid">
-        <div
-          v-for="eng in allEngines"
-          :key="eng.id"
-          class="picker-item"
-          :class="{ 'is-current': eng.id === currentEngine?.id }"
-          @click="select(eng)"
-        >
-          <svg v-if="getIconfontId(eng)" class="picker-icon-svg" :aria-label="eng.name">
-            <use :href="`#${getIconfontId(eng)}`" />
-          </svg>
-          <img
-            v-else-if="getIconUrl(eng)"
-            :src="getIconUrl(eng)"
-            :alt="eng.name"
-            class="picker-icon-img"
-            @error="onPickerIconError(eng)"
-          />
-          <span v-else class="picker-icon">{{ getIconFallback(eng) }}</span>
-          <span class="picker-name">{{ eng.name }}</span>
+          <div
+            v-for="eng in allEngines"
+            :key="eng.id"
+            class="picker-item"
+            :class="{ 'is-current': eng.id === currentEngine?.id }"
+            @click="select(eng)"
+          >
+            <i
+              class="iconfont icon-top picker-item-remove"
+              aria-label="删除"
+              @click.stop="removeEngine(eng, $event)"
+            />
+            <EngineIcon
+              :engine="eng"
+              size="medium"
+              :icon-error="pickerIconErrors.has(eng.id)"
+              @error="onPickerIconError(eng)"
+            />
+            <span class="picker-name">{{ eng.name }}</span>
+          </div>
+          <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+            <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
+            <span class="picker-name">恢复默认</span>
+          </div>
+          <div class="picker-item picker-item-add" @click="showAddForm = true">
+            <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
+            <span class="picker-name">添加自定义</span>
+          </div>
         </div>
-        <div class="picker-item picker-item-add" @click="showAddForm = true">
-          <span class="picker-icon">➕</span>
-          <span class="picker-name">添加自定义</span>
-        </div>
-      </div>
       <EnginePickerAddForm
         :visible="showAddForm"
         @close="showAddForm = false"
@@ -50,31 +54,35 @@
       >
         <div class="engine-picker">
           <div class="picker-grid">
-            <div
-              v-for="eng in allEngines"
-              :key="eng.id"
-              class="picker-item"
-              :class="{ 'is-current': eng.id === currentEngine?.id }"
-              @click="select(eng)"
-            >
-              <svg v-if="getIconfontId(eng)" class="picker-icon-svg" :aria-label="eng.name">
-                <use :href="`#${getIconfontId(eng)}`" />
-              </svg>
-              <img
-                v-else-if="getIconUrl(eng)"
-                :src="getIconUrl(eng)"
-                :alt="eng.name"
-                class="picker-icon-img"
-                @error="onPickerIconError(eng)"
-              />
-              <span v-else class="picker-icon">{{ getIconFallback(eng) }}</span>
-              <span class="picker-name">{{ eng.name }}</span>
+              <div
+                v-for="eng in allEngines"
+                :key="eng.id"
+                class="picker-item"
+                :class="{ 'is-current': eng.id === currentEngine?.id }"
+                @click="select(eng)"
+              >
+                <i
+                  class="iconfont icon-top picker-item-remove"
+                  aria-label="删除"
+                  @click.stop="removeEngine(eng, $event)"
+                />
+                <EngineIcon
+                  :engine="eng"
+                  size="medium"
+                  :icon-error="pickerIconErrors.has(eng.id)"
+                  @error="onPickerIconError(eng)"
+                />
+                <span class="picker-name">{{ eng.name }}</span>
+              </div>
+              <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+                <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
+                <span class="picker-name">恢复默认</span>
+              </div>
+              <div class="picker-item picker-item-add" @click="showAddForm = true">
+                <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
+                <span class="picker-name">添加自定义</span>
+              </div>
             </div>
-            <div class="picker-item picker-item-add" @click="showAddForm = true">
-              <span class="picker-icon">➕</span>
-              <span class="picker-name">添加自定义</span>
-            </div>
-          </div>
           <EnginePickerAddForm
             :visible="showAddForm"
             @close="showAddForm = false"
@@ -87,30 +95,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { getEngineIconUrl, isIconfontSymbol } from '@/utils/engine';
+import { ref, computed, watch } from 'vue';
 import { DEFAULT_ENGINES } from '@/constants/engines';
+import { getItem, setItem } from '@/utils/storage';
+import EngineIcon from './EngineIcon.vue';
 import EnginePickerAddForm from './EnginePickerAddForm.vue';
 import type { SearchEngine } from '@/types';
 
 const STORAGE_KEY = 'page-start-custom-engines';
+const HIDDEN_IDS_KEY = 'hiddenEngineIds';
+
+function loadHiddenIds(): string[] {
+  try {
+    const raw = getItem(HIDDEN_IDS_KEY);
+    if (raw === null) return [];
+    const parsed = JSON.parse(raw as string);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHiddenIds(ids: string[]) {
+  setItem(HIDDEN_IDS_KEY, ids);
+}
 
 const pickerIconErrors = ref(new Set<string>());
-
-function getIconfontId(eng: SearchEngine | null | undefined): string {
-  if (!eng?.icon || !isIconfontSymbol(eng.icon)) return '';
-  return eng.icon.trim();
-}
-
-function getIconUrl(eng: SearchEngine | null | undefined): string {
-  if (!eng || getIconfontId(eng) || pickerIconErrors.value.has(eng.id)) return '';
-  return getEngineIconUrl(eng) || '';
-}
-
-function getIconFallback(eng: SearchEngine | null | undefined): string {
-  if (!eng?.name) return '🔍';
-  return eng.name.slice(0, 1);
-}
+const hiddenIds = ref<string[]>(loadHiddenIds());
 
 function onPickerIconError(eng: SearchEngine) {
   if (eng?.id) pickerIconErrors.value = new Set([...pickerIconErrors.value, eng.id]);
@@ -147,9 +158,20 @@ const emit = defineEmits<{
 }>();
 
 const customEngines = ref(loadCustomEngines());
-const allEngines = computed(() => [...DEFAULT_ENGINES, ...customEngines.value]);
+const allEngines = computed(() => [
+  ...DEFAULT_ENGINES.filter((e) => !hiddenIds.value.includes(e.id)),
+  ...customEngines.value
+]);
 const currentEngine = computed(() => props.modelValue);
 const showAddForm = ref(false);
+
+watch(() => props.visible, (visible) => {
+  if (visible) hiddenIds.value = loadHiddenIds();
+});
+
+watch(allEngines, (engs) => {
+  if (engs.length === 0) showAddForm.value = false;
+}, { deep: true });
 
 const close = () => {
   showAddForm.value = false;
@@ -174,12 +196,36 @@ function onAddEngine(payload: { name: string; url: string }) {
   customEngines.value = loadCustomEngines();
   showAddForm.value = false;
 }
+
+function removeEngine(eng: SearchEngine, e: Event) {
+  e.stopPropagation();
+  if (eng.id.startsWith('custom-')) {
+    const next = customEngines.value.filter((c) => c.id !== eng.id);
+    saveCustomEngines(next);
+    customEngines.value = loadCustomEngines();
+  } else {
+    hiddenIds.value = [...hiddenIds.value, eng.id];
+    saveHiddenIds(hiddenIds.value);
+  }
+}
+
+function restoreDefaultEngines() {
+  hiddenIds.value = [];
+  saveHiddenIds([]);
+  saveCustomEngines([]);
+  customEngines.value = [];
+  const first = DEFAULT_ENGINES[0];
+  if (first) {
+    emit('update:modelValue', { ...first });
+  }
+}
 </script>
 
 <style scoped>
-/* 与搜索框统一的毛玻璃风格 */
+/* 与搜索框统一的毛玻璃风格；border-box 保证与搜索框等宽 */
 .engine-picker {
   min-width: 0;
+  box-sizing: border-box;
   background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -189,12 +235,14 @@ function onAddEngine(payload: { name: string; url: string }) {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-/* 内联模式：紧贴搜索框下方，同宽，小间距 */
+/* 内联模式：紧贴搜索框下方，与搜索框等宽（同属 search-block max-width: 520px） */
 .engine-picker-inline {
   width: 100%;
+  max-width: 520px;
   min-width: 0;
   margin-top: 10px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .slide-down-enter-active,
@@ -244,9 +292,11 @@ function onAddEngine(payload: { name: string; url: string }) {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  min-height: 88px;
 }
 
 .picker-item {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 14px 10px;
   background: rgba(255, 255, 255, 0.2);
@@ -255,30 +305,30 @@ function onAddEngine(payload: { name: string; url: string }) {
   transition: background 0.2s, transform 0.2s;
 }
 
+.picker-item-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  padding: 2px;
+  transition: color 0.15s;
+}
+.picker-item-remove:hover {
+  color: rgba(0, 0, 0, 0.85);
+}
+
 .picker-item:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.02); }
 .picker-item.is-current { background: rgba(255, 255, 255, 0.4); }
 
 .picker-icon { font-size: 20px; margin-bottom: 4px; }
+.picker-item :deep(.engine-icon) { margin-bottom: 4px; }
 .picker-name { font-size: 13px; color: rgba(0, 0, 0, 0.9); }
 
+.picker-item-restore,
 .picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.35); }
-
-.picker-icon-svg {
-  width: 28px;
-  height: 28px;
-  margin-bottom: 4px;
-  flex-shrink: 0;
-  fill: currentColor;
-  color: rgba(0, 0, 0, 0.78);
-}
-.picker-icon-img {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  object-fit: contain;
-  margin-bottom: 4px;
-  filter: grayscale(100%) brightness(0.35) contrast(1.4);
-}
-.picker-icon { font-size: 20px; margin-bottom: 4px; }
+.picker-item-restore .picker-icon,
+.picker-item-add .picker-icon { margin-bottom: 0; }
 
 </style>

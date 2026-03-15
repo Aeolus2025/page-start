@@ -4,7 +4,7 @@
     <input
       v-model="url"
       type="text"
-      placeholder="搜索 URL，须包含 %s 或 {query} 表示关键词"
+      placeholder="搜索 URL，需填完整地址（含 %s）或（如 https://www.google.com/search?q=%s）"
       class="add-input add-url"
       :class="{ 'add-input-error': addError }"
       @input="addError = ''"
@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { validateSearchEngineUrl } from '@/utils/engine';
+import { validateSearchEngineUrl, normalizeSearchEngineUrl } from '@/utils/engine';
 
 const props = withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });
 
@@ -53,7 +53,7 @@ function confirm() {
     addError.value = result.message ?? '';
     return;
   }
-  const urlNormalized = urlRaw.replace(/\{query\}/gi, '%s');
+  const urlNormalized = normalizeSearchEngineUrl(urlRaw);
   emit('add', { name: nameVal, url: urlNormalized });
   name.value = '';
   url.value = '';
@@ -82,8 +82,16 @@ function confirm() {
   box-sizing: border-box;
   min-width: 0;
 }
-.add-input-error { border-color: #c62828; background: rgba(198, 40, 40, 0.06); }
-.add-error { margin: 0 0 8px; font-size: 12px; color: #c62828; }
+.add-input-error {
+  border-color: rgba(180, 83, 60, 0.55);
+  background: rgba(180, 83, 60, 0.04);
+}
+.add-error {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1.4;
+}
 .add-url { font-family: monospace; }
 .add-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .add-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }

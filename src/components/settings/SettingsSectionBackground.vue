@@ -1,16 +1,16 @@
 <template>
   <section class="settings-section">
-    <h3 class="section-title">背景图</h3>
+    <h3 class="section-title">背景</h3>
     <div class="bg-preview-wrap">
       <div class="bg-preview" :style="previewStyle"></div>
     </div>
     <div class="bg-actions">
       <label class="btn btn-primary">
         <input type="file" accept="image/*" class="file-input" @change="onFileSelect" />
-        上传图片
+        上传背景图片
       </label>
       <button type="button" class="btn btn-outline" :disabled="!config.hasCustomBackground" @click="removeBg">
-        删除自定义
+        恢复默认背景
       </button>
     </div>
   </section>
