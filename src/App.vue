@@ -31,6 +31,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 根组件：背景、时钟、搜索栏 / 快捷面板切换、设置入口。
+ * 右键空白处打开快捷面板，点击 contentBlock 外关闭。
+ */
 import { ref, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useConfigStore } from '@/store/config';

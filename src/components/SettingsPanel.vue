@@ -48,11 +48,13 @@ import SettingsSectionBackground from './settings/SettingsSectionBackground.vue'
 import SettingsSectionClock from './settings/SettingsSectionClock.vue';
 import SettingsSectionSearch from './settings/SettingsSectionSearch.vue';
 import { useConfigStore } from '@/store/config';
+import { useShortcutsStore } from '@/store/shortcuts';
 
 withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });
 
 const emit = defineEmits<{ (e: 'close'): void }>();
 const config = useConfigStore();
+const shortcuts = useShortcutsStore();
 const importInputRef = ref<HTMLInputElement | null>(null);
 
 function close() {
@@ -61,6 +63,8 @@ function close() {
 
 function resetToDefaults() {
   config.resetToDefaults();
+  shortcuts.clearAll();
+  window.location.reload();
 }
 
 function triggerImport() {

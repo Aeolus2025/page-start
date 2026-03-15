@@ -1,3 +1,7 @@
+<!--
+  快捷面板网格：展示用户快捷方式卡片与“添加”按钮；
+  支持图标（URL/上传）、加载失败时回退为首字母；编辑/删除按钮悬停显示。
+-->
 <template>
   <div ref="wrapRef" class="shortcut-grid-wrap" :style="gridWrapStyle">
     <div class="grid" :class="{ 'grid-empty': shortcuts.items.length === 0 }">
@@ -112,42 +116,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { useShortcutsStore } from '@/store/shortcuts';
 import { getShortcutFaviconUrl } from '@/utils/engine';
-
-const CARD_WIDTH = 88;
-const GAP = 20;
+import { isIconUrl, getFirstLetter } from '@/utils/shortcutIcon';
+import { useShortcutGridLayout } from '@/composables/useShortcutGridLayout';
 
 const shortcuts = useShortcutsStore();
 const wrapRef = ref<HTMLElement | null>(null);
-const wrapWidth = ref(520);
+const { gridWrapStyle } = useShortcutGridLayout(wrapRef);
+
 const addVisible = ref(false);
 const editingId = ref<string | null>(null);
 const addError = ref('');
 const form = reactive({ name: '', url: '', icon: '' });
 const iconLoadErrorIds = ref(new Set<string>());
 
-function isIconUrl(icon: string): boolean {
-  return Boolean(icon && (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')));
-}
-
-function getFirstLetter(name: string): string {
-  const s = (name || '').trim();
-  return s ? s.charAt(0).toUpperCase() : '?';
-}
-
 function onIconError(itemId: string) {
   iconLoadErrorIds.value = new Set(iconLoadErrorIds.value).add(itemId);
 }
-
-const columnsPerRow = computed(() =>
-  Math.max(1, Math.floor((wrapWidth.value + GAP) / (CARD_WIDTH + GAP)))
-);
-
-const gridWrapStyle = computed(() => ({
-  '--grid-cols': String(columnsPerRow.value)
-}));
 
 function openAdd() {
   editingId.value = null;
@@ -193,6 +180,12 @@ function removeItem(id: string) {
   shortcuts.remove(id);
 }
 
+/** 将用户输入的链接规范为带协议的完整 URL */
+function normalizeUrl(url: string): string {
+  const href = url.trim();
+  return /^https?:\/\//i.test(href) ? href : `https://${href}`;
+}
+
 function submitForm() {
   addError.value = '';
   const name = form.name.trim();
@@ -201,40 +194,24 @@ function submitForm() {
     addError.value = '请填写名称和链接';
     return;
   }
-  let href = url;
-  if (!/^https?:\/\//i.test(href)) href = `https://${href}`;
+  const href = normalizeUrl(url);
   const icon = form.icon.trim() || getShortcutFaviconUrl(href);
   const iconVal = icon || '🔗';
+  const isEdit = Boolean(editingId.value);
   try {
-    if (editingId.value) {
-      shortcuts.update(editingId.value, { name, url: href, icon: iconVal });
+    if (isEdit) {
+      shortcuts.update(editingId.value!, { name, url: href, icon: iconVal });
     } else {
       shortcuts.add({ name, url: href, icon: iconVal });
     }
     closeAdd();
-  } catch (e) {
-    addError.value = editingId.value ? '修改失败，请重试' : '添加失败，请重试';
+  } catch {
+    addError.value = isEdit ? '修改失败，请重试' : '添加失败，请重试';
   }
 }
 
 watch(addVisible, (v) => {
-  if (v) document.body.style.overflow = 'hidden';
-  else document.body.style.overflow = '';
-});
-
-let resizeObs: ResizeObserver | null = null;
-onMounted(() => {
-  if (!wrapRef.value) return;
-  wrapWidth.value = wrapRef.value.getBoundingClientRect().width || 520;
-  resizeObs = new ResizeObserver((entries) => {
-    const w = entries[0]?.contentRect.width;
-    if (w != null && w > 0) wrapWidth.value = w;
-  });
-  resizeObs.observe(wrapRef.value);
-});
-onUnmounted(() => {
-  if (wrapRef.value && resizeObs) resizeObs.unobserve(wrapRef.value);
-  resizeObs = null;
+  document.body.style.overflow = v ? 'hidden' : '';
 });
 </script>
 

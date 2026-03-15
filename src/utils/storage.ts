@@ -1,5 +1,8 @@
 const prefix = 'page-start-';
 
+/**
+ * 从 localStorage 读取一项（键会加上项目前缀）
+ */
 export function getItem(key: string): string | null {
   try {
     return localStorage.getItem(prefix + key);
@@ -8,15 +11,28 @@ export function getItem(key: string): string | null {
   }
 }
 
-export function setItem(key: string, value: string | number | boolean | object): void {
+/**
+ * 写入 localStorage（键会加上项目前缀；非字符串会 JSON 序列化）
+ */
+export function setItem(
+  key: string,
+  value: string | number | boolean | object
+): void {
   try {
     const v = typeof value === 'string' ? value : JSON.stringify(value);
     localStorage.setItem(prefix + key, v);
-  } catch (_) {}
+  } catch {
+    // 配额或隐私模式可能抛错，静默忽略
+  }
 }
 
+/**
+ * 从 localStorage 删除一项（键会加上项目前缀）
+ */
 export function removeItem(key: string): void {
   try {
     localStorage.removeItem(prefix + key);
-  } catch (_) {}
+  } catch {
+    // 静默忽略
+  }
 }

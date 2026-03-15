@@ -7,7 +7,10 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "strict": true,
-    "noEmit": true
+    "composite": true,
+    "outDir": "dist-node",
+    "rootDir": ".",
+    "types": ["node"]
   },
   "include": ["vite.config.ts"]
 }

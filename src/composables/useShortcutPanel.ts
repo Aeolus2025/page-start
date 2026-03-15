@@ -2,6 +2,10 @@ import { ref, nextTick, watch, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import { useClickOutside } from './useClickOutside';
 
+/**
+ * 快捷面板显隐与右键唤起逻辑。
+ * 点击 contentBlock 外部关闭面板；面板打开时阻止默认右键菜单以便在空白处右键打开面板。
+ */
 export function useShortcutPanel(contentBlockRef: Ref<HTMLElement | null>) {
   const showShortcutPanel = ref(false);
   const panelJustClosed = ref(false);
@@ -54,7 +58,6 @@ export function useShortcutPanel(contentBlockRef: Ref<HTMLElement | null>) {
     showShortcutPanel,
     panelJustClosed,
     openShortcutPanel,
-    closeShortcutPanel,
-    installContextMenuBlock
+    closeShortcutPanel
   };
 }

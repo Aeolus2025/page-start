@@ -1,3 +1,6 @@
+/**
+ * 快捷方式 Store：增删改查，持久化到 localStorage（key: shortcuts）。
+ */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
 import type { ShortcutItem } from '@/types';
@@ -53,6 +56,11 @@ export const useShortcutsStore = defineStore('shortcuts', {
       if (idx === -1) return;
       this.items = this.items.slice();
       this.items[idx] = { ...this.items[idx], ...patch };
+      saveShortcuts(this.items);
+    },
+    /** 清空所有快捷方式（恢复默认时调用） */
+    clearAll() {
+      this.items = [];
       saveShortcuts(this.items);
     }
   }

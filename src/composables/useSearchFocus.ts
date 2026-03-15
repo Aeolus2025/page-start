@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
-let blurTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let blurTimeoutId: number | null = null;
 
 export function useSearchFocus(onFocusChange: (focused: boolean) => void) {
   const isFocused = ref(false);

@@ -1,8 +1,12 @@
+/**
+ * 全局配置 Store：外观、时钟、搜索、导入导出等。
+ * 状态持久化到 localStorage（前缀 page-start-）。
+ */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
 import type { ConfigState, ExportPayload } from '@/types';
 
-const defaultBg = '/image.png';
+const defaultBg = '/background.jpg';
 
 /** 配置默认值，用于初始化和恢复默认 */
 export const DEFAULT_CONFIG: ConfigState = {
@@ -27,6 +31,94 @@ function readBool(key: string, defaultValue: boolean): boolean {
 function readStr(key: string, defaultValue: string): string {
   const v = getItem(key);
   return v !== null && v !== '' ? v : defaultValue;
+}
+
+/** 从 localStorage 原始字符串解析隐藏引擎 ID 列表 */
+function parseHiddenEngineIds(raw: string | null): string[] {
+  try {
+    const a = raw == null ? [] : JSON.parse(raw as string);
+    return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** 从 localStorage 原始字符串解析自定义引擎列表 */
+function parseCustomEngines(raw: string | null): { name: string; url: string }[] {
+  try {
+    const a = raw == null ? [] : JSON.parse(raw as string);
+    return Array.isArray(a)
+      ? a.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string')
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** 将导入的 config 对象应用到 store 并持久化 */
+function applyImportedConfig(
+  store: Record<string, unknown>,
+  config: Record<string, unknown> | undefined
+): void {
+  if (!config || typeof config !== 'object') return;
+  if (typeof config.backgroundImage === 'string') {
+    store.backgroundImage = config.backgroundImage;
+    setItem('backgroundImage', config.backgroundImage);
+  }
+  if (typeof config.timeFormat24 === 'boolean') {
+    store.timeFormat24 = config.timeFormat24;
+    setItem('timeFormat24', config.timeFormat24);
+  }
+  if (typeof config.timeShowSeconds === 'boolean') {
+    store.timeShowSeconds = config.timeShowSeconds;
+    setItem('timeShowSeconds', config.timeShowSeconds);
+  }
+  if (['small', 'medium', 'large'].includes(config.timeFontSize as string)) {
+    const val = config.timeFontSize as ConfigState['timeFontSize'];
+    store.timeFontSize = val;
+    setItem('timeFontSize', val);
+  }
+  if (config.timeFontWeight === 'bold' || config.timeFontWeight === 'normal') {
+    store.timeFontWeight = config.timeFontWeight;
+    setItem('timeFontWeight', config.timeFontWeight as string);
+  }
+  if (['normal', 'italic', 'script'].includes(config.timeFontStyle as string)) {
+    store.timeFontStyle = config.timeFontStyle as ConfigState['timeFontStyle'];
+    setItem('timeFontStyle', store.timeFontStyle as string);
+  }
+  if (typeof config.focusSearchOnLoad === 'boolean') {
+    store.focusSearchOnLoad = config.focusSearchOnLoad;
+    setItem('focusSearchOnLoad', config.focusSearchOnLoad);
+  }
+  if (typeof config.searchHistoryEnabled === 'boolean') {
+    store.searchHistoryEnabled = config.searchHistoryEnabled;
+    setItem('searchHistoryEnabled', config.searchHistoryEnabled);
+  }
+  if (typeof config.openSearchInNewTab === 'boolean') {
+    store.openSearchInNewTab = config.openSearchInNewTab;
+    setItem('openSearchInNewTab', config.openSearchInNewTab);
+  }
+  if (typeof config.exportIncludeBackground === 'boolean') {
+    store.exportIncludeBackground = config.exportIncludeBackground;
+    setItem('exportIncludeBackground', config.exportIncludeBackground);
+  }
+}
+
+/** 持久化导入的引擎相关数据（隐藏列表、自定义引擎） */
+function persistImportedEngineData(
+  hidden: unknown,
+  custom: unknown
+): void {
+  if (Array.isArray(hidden)) {
+    const ids = hidden.filter((x): x is string => typeof x === 'string');
+    setItem('hiddenEngineIds', JSON.stringify(ids));
+  }
+  if (Array.isArray(custom)) {
+    const list = custom.filter(
+      (x) => x && typeof x.name === 'string' && typeof x.url === 'string'
+    );
+    setItem('custom-engines', JSON.stringify(list));
+  }
 }
 
 export const useConfigStore = defineStore('config', {
@@ -127,31 +219,13 @@ export const useConfigStore = defineStore('config', {
     },
     /** 导出配置为 JSON 对象（含 config、hiddenEngineIds、customEngines） */
     exportConfig(): ExportPayload {
-      const rawHidden = getItem('hiddenEngineIds');
-      const rawCustom = getItem('custom-engines');
       const configSnapshot = { ...this.$state };
-      if (!this.exportIncludeBackground) {
-        configSnapshot.backgroundImage = '';
-      }
+      if (!this.exportIncludeBackground) configSnapshot.backgroundImage = '';
       return {
         version: 1,
         config: configSnapshot,
-        hiddenEngineIds: (() => {
-          try {
-            const a = rawHidden == null ? [] : JSON.parse(rawHidden as string);
-            return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string') : [];
-          } catch {
-            return [];
-          }
-        })(),
-        customEngines: (() => {
-          try {
-            const a = rawCustom == null ? [] : JSON.parse(rawCustom as string);
-            return Array.isArray(a) ? a.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string') : [];
-          } catch {
-            return [];
-          }
-        })()
+        hiddenEngineIds: parseHiddenEngineIds(getItem('hiddenEngineIds')),
+        customEngines: parseCustomEngines(getItem('custom-engines'))
       };
     },
     /** 导入配置；返回 true 表示成功，建议调用后刷新页面以使引擎等生效 */
@@ -159,59 +233,11 @@ export const useConfigStore = defineStore('config', {
       if (!data || typeof data !== 'object') return false;
       const d = data as Record<string, unknown>;
       if (d.version !== 1) return false;
-      const config = d.config as Record<string, unknown> | undefined;
-      if (config && typeof config === 'object') {
-        if (typeof config.backgroundImage === 'string') {
-          this.backgroundImage = config.backgroundImage;
-          setItem('backgroundImage', this.backgroundImage);
-        }
-        if (typeof config.timeFormat24 === 'boolean') {
-          this.timeFormat24 = config.timeFormat24;
-          setItem('timeFormat24', this.timeFormat24);
-        }
-        if (typeof config.timeShowSeconds === 'boolean') {
-          this.timeShowSeconds = config.timeShowSeconds;
-          setItem('timeShowSeconds', this.timeShowSeconds);
-        }
-        if (['small', 'medium', 'large'].includes(config.timeFontSize as string)) {
-          this.timeFontSize = config.timeFontSize as ConfigState['timeFontSize'];
-          setItem('timeFontSize', this.timeFontSize);
-        }
-        if (config.timeFontWeight === 'bold' || config.timeFontWeight === 'normal') {
-          this.timeFontWeight = config.timeFontWeight;
-          setItem('timeFontWeight', this.timeFontWeight);
-        }
-        if (['normal', 'italic', 'script'].includes(config.timeFontStyle as string)) {
-          this.timeFontStyle = config.timeFontStyle as ConfigState['timeFontStyle'];
-          setItem('timeFontStyle', this.timeFontStyle);
-        }
-        if (typeof config.focusSearchOnLoad === 'boolean') {
-          this.focusSearchOnLoad = config.focusSearchOnLoad;
-          setItem('focusSearchOnLoad', this.focusSearchOnLoad);
-        }
-        if (typeof config.searchHistoryEnabled === 'boolean') {
-          this.searchHistoryEnabled = config.searchHistoryEnabled;
-          setItem('searchHistoryEnabled', this.searchHistoryEnabled);
-        }
-        if (typeof config.openSearchInNewTab === 'boolean') {
-          this.openSearchInNewTab = config.openSearchInNewTab;
-          setItem('openSearchInNewTab', this.openSearchInNewTab);
-        }
-        if (typeof config.exportIncludeBackground === 'boolean') {
-          this.exportIncludeBackground = config.exportIncludeBackground;
-          setItem('exportIncludeBackground', this.exportIncludeBackground);
-        }
-      }
-      const hidden = d.hiddenEngineIds;
-      if (Array.isArray(hidden)) {
-        const ids = hidden.filter((x): x is string => typeof x === 'string');
-        setItem('hiddenEngineIds', JSON.stringify(ids));
-      }
-      const custom = d.customEngines;
-      if (Array.isArray(custom)) {
-        const list = custom.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string');
-        setItem('custom-engines', JSON.stringify(list));
-      }
+      applyImportedConfig(
+        this as unknown as Record<string, unknown>,
+        d.config as Record<string, unknown> | undefined
+      );
+      persistImportedEngineData(d.hiddenEngineIds, d.customEngines);
       return true;
     }
   }

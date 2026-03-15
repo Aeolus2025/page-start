@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-node
 dist-ssr
 *.local
 
@@ -25,3 +26,6 @@ dist-ssr
 
 # 本地文档目录（不推送远程）
 docs/
+
+# tsc 产物（根配置已 noEmit，此处防止历史或误产出被提交）
+src/**/*.vue.js
