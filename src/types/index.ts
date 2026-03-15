@@ -43,3 +43,12 @@ export interface ContextMenuItem {
   shortcut?: string;
   action: () => void;
 }
+
+/** 快捷面板中的一项 */
+export interface ShortcutItem {
+  id: string;
+  name: string;
+  url: string;
+  /** 展示用，如 emoji 或单字符 */
+  icon: string;
+}

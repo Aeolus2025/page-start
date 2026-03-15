@@ -145,7 +145,10 @@ body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; ov
 }
 .settings-fab:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.05); }
 .shortcut-sheet {
-  width: 100%;
+  align-self: center;
+  width: fit-content;
+  min-width: 100%;
+  max-width: 700px;
   padding: 20px;
   background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%);
   backdrop-filter: blur(16px);
@@ -153,6 +156,7 @@ body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; ov
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 24px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 .slide-down-enter-active,
 .slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }

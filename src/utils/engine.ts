@@ -22,6 +22,27 @@ export function getEngineIconUrl(engine: SearchEngine | null | undefined): strin
   }
 }
 
+/** 快捷方式 favicon 来源：direct 直连站点（国内无需代理），google 需代理 */
+export type FaviconProvider = 'direct' | 'google';
+
+/**
+ * 从任意链接 URL 得到站点 favicon 地址（快捷方式等用）。
+ * 默认 direct：直连 https://域名/favicon.ico，国内无需代理；可选 google。
+ */
+export function getShortcutFaviconUrl(url: string, provider: FaviconProvider = 'direct'): string {
+  if (!url || typeof url !== 'string') return '';
+  try {
+    const u = new URL(url.trim());
+    const host = u.hostname;
+    if (provider === 'google') {
+      return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`;
+    }
+    return `https://${host}/favicon.ico`;
+  } catch {
+    return '';
+  }
+}
+
 /**
  * 校验自定义搜索引擎 URL 格式。
  * 支持：① 完整 URL（含占位符 %s 或 {query}）；② 基础路径（不含占位符，保存时会自动追加 ?q=关键词）
