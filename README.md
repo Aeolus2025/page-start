@@ -1,19 +1,19 @@
 # Page Start
 
-轻量化起始页：新标签页展示时钟、搜索栏与自定义快捷方式，支持配置导入导出与背景自定义。
+轻量化起始页
 
 ## 功能概览
 
 - **时钟**：数字时钟，可配置 12/24 制、秒显、字号与字重
 - **搜索栏**：多引擎切换、搜索历史、占位符搜索；支持当前页跳转或新标签页打开
-- **快捷面板**：右键空白处唤起；自定义快捷方式（名称、链接、图标上传或自动 favicon）；图标加载失败时回退为首字母；编辑/删除悬停显示
-- **设置**：背景图上传（格式/大小限制）、时钟与搜索相关选项、导入/导出配置（JSON，可选是否含背景图）
+- **快捷面板**：右键空白处唤起；自定义快捷方式；编辑/删除快捷方式
+- **设置面板**：背景图上传、时钟与搜索相关选项、导入/导出配置（JSON，可选是否含背景图）
 
 ## 技术栈
 
-- **Vue 3**（Composition API + `<script setup>`）
-- **Pinia** 状态管理
-- **Vite** 构建
+- **Vue 3**
+- **Pinia**
+- **Vite**
 - **TypeScript**
 
 ## 项目结构
@@ -25,9 +25,9 @@ src/
 ├── assets/                 # 图标字体等静态资源
 ├── components/             # 页面级与通用组件
 │   ├── DigitalClock.vue
-│   ├── SearchBar.vue      # 搜索框、引擎选择、历史
-│   ├── ShortcutGrid.vue   # 快捷方式网格与添改弹窗
-│   ├── SettingsPanel.vue # 设置面板（背景/时钟/搜索/导入导出）
+│   ├── SearchBar.vue      # 搜索栏面板
+│   ├── ShortcutGrid.vue   # 快捷方式面板
+│   ├── SettingsPanel.vue  # 设置面板
 │   ├── settings/          # 设置内各区块
 │   ├── EnginePicker.vue / EngineIcon.vue
 │   └── ...
@@ -39,11 +39,11 @@ src/
 │   └── ...
 ├── constants/              # 内置搜索引擎等常量
 ├── store/
-│   ├── config.ts          # 全局配置（持久化）
-│   └── shortcuts.ts       # 快捷方式列表（持久化）
+│   ├── config.ts          # 全局配置 
+│   └── shortcuts.ts       # 快捷方式列表 
 ├── types/                  # 全局类型
 └── utils/
-    ├── storage.ts         # localStorage 封装（统一前缀）
+    ├── storage.ts         # localStorage 封装 
     ├── engine.ts          # 搜索引擎与 favicon 工具
     └── shortcutIcon.ts    # 快捷方式图标/首字母工具
 ```
@@ -75,38 +75,7 @@ npm run preview
    - 点击 **加载已解压的扩展程序**，选择项目下的 **`dist`** 目录。
 3. 之后打开新标签页即可看到本起始页。
 
-扩展使用 Manifest V3，`public/manifest.json` 中通过 `chrome_url_overrides.newtab` 覆盖新标签页，无需区分浏览器类型。
-
-### 扩展图标
-
-扩展在浏览器工具栏/扩展管理页显示的图标由 **`public/manifest.json`** 的 `icons` 字段指定，图标文件放在 **`public/icons/`**（构建时会复制到 `dist/icons/`）。
-
-当前配置示例（仅一个尺寸时可用 SVG）：
-
-```json
-"icons": {
-  "128": "/icons/logo.png"
-}
-```
-
-若希望在不同场景下更清晰，建议提供 **16、48、128** 三种尺寸的 PNG（如 `icon16.png`、`icon48.png`、`icon128.png`），并在 manifest 中写明：
-
-```json
-"icons": {
-  "16": "/icons/icon16.png",
-  "48": "/icons/icon48.png",
-  "128": "/icons/icon128.png"
-}
-```
-
-修改或新增 `public/icons/` 下文件后，重新执行 `npm run build` 即可生效。
-
 ## 配置与数据
 
 - **本地存储**：键均带前缀 `page-start-`，包括配置项、快捷方式、隐藏引擎 ID、自定义引擎、搜索历史等。
 - **导出文件**：JSON，含 `version`、`config`、`hiddenEngineIds`、`customEngines`；可选是否包含背景图 base64。
-
-## 浏览器支持
-
-- **网页**：现代浏览器（支持 ES 模块、Pinia、Vue 3）。
-- **扩展**：Chrome、Edge（Manifest V3，新标签页覆盖）。本地存储与 favicon 请求依赖同源与网络环境（国内默认使用直连站点 favicon，无需代理）。
