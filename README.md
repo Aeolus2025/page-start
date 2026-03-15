@@ -77,6 +77,30 @@ npm run preview
 
 扩展使用 Manifest V3，`public/manifest.json` 中通过 `chrome_url_overrides.newtab` 覆盖新标签页，无需区分浏览器类型。
 
+### 扩展图标
+
+扩展在浏览器工具栏/扩展管理页显示的图标由 **`public/manifest.json`** 的 `icons` 字段指定，图标文件放在 **`public/icons/`**（构建时会复制到 `dist/icons/`）。
+
+当前配置示例（仅一个尺寸时可用 SVG）：
+
+```json
+"icons": {
+  "128": "/icons/logo.png"
+}
+```
+
+若希望在不同场景下更清晰，建议提供 **16、48、128** 三种尺寸的 PNG（如 `icon16.png`、`icon48.png`、`icon128.png`），并在 manifest 中写明：
+
+```json
+"icons": {
+  "16": "/icons/icon16.png",
+  "48": "/icons/icon48.png",
+  "128": "/icons/icon128.png"
+}
+```
+
+修改或新增 `public/icons/` 下文件后，重新执行 `npm run build` 即可生效。
+
 ## 配置与数据
 
 - **本地存储**：键均带前缀 `page-start-`，包括配置项、快捷方式、隐藏引擎 ID、自定义引擎、搜索历史等。

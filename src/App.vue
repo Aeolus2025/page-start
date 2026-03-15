@@ -143,11 +143,11 @@ body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; ov
   position: fixed; top: 16px; right: 16px; z-index: 5;
   width: 40px; height: 40px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(8px);
   color: white; font-size: 20px; cursor: pointer;
   transition: transform 0.2s, background 0.2s;
 }
-.settings-fab:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.05); }
+.settings-fab:hover { background: rgba(255, 255, 255, 0.48); transform: scale(1.05); }
 .shortcut-sheet {
   align-self: center;
   width: fit-content;

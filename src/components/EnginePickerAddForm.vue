@@ -4,7 +4,7 @@
     <input
       v-model="url"
       type="text"
-      placeholder="搜索 URL，需填完整地址（含 %s）或（如 https://www.google.com/search?q=%s）"
+      placeholder="搜索URL,需填完整地址(含%s)(如 https://www.google.com/search?q=%s)"
       class="add-input add-url"
       :class="{ 'add-input-error': addError }"
       @input="addError = ''"
