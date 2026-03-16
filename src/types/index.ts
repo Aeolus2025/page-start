@@ -36,6 +36,8 @@ export interface ConfigState {
   timeFontStyle: 'normal' | 'italic' | 'script';
   focusSearchOnLoad: boolean;
   searchHistoryEnabled: boolean;
+  /** 输入时是否请求并展示在线搜索建议（联想词） */
+  searchSuggestEnabled: boolean;
   /** 搜索结果在新标签页打开，否则当前页跳转 */
   openSearchInNewTab: boolean;
   /** 导出配置时是否包含背景图（方案 C），默认 true */
@@ -69,6 +71,7 @@ export enum StorageKey {
   TimeFontStyle = 'timeFontStyle',
   FocusSearchOnLoad = 'focusSearchOnLoad',
   SearchHistoryEnabled = 'searchHistoryEnabled',
+  SearchSuggestEnabled = 'searchSuggestEnabled',
   OpenSearchInNewTab = 'openSearchInNewTab',
   ExportIncludeBackground = 'exportIncludeBackground',
   HiddenEngineIds = 'hiddenEngineIds',

@@ -16,6 +16,13 @@
       </label>
     </div>
     <div class="option-row">
+      <span class="option-label">启用搜索建议</span>
+      <label class="switch-label">
+        <input type="checkbox" :checked="config.searchSuggestEnabled" @change="onSearchSuggestChange" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div class="option-row">
       <span class="option-label">在新标签页打开搜索结果</span>
       <label class="switch-label">
         <input type="checkbox" :checked="config.openSearchInNewTab" @change="onOpenSearchInNewTabChange" />
@@ -36,6 +43,10 @@ function onFocusSearchOnLoadChange(e: Event) {
 
 function onSearchHistoryChange(e: Event) {
   config.setSearchHistoryEnabled((e.target as HTMLInputElement).checked);
+}
+
+function onSearchSuggestChange(e: Event) {
+  config.setSearchSuggestEnabled((e.target as HTMLInputElement).checked);
 }
 
 function onOpenSearchInNewTabChange(e: Event) {

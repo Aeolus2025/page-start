@@ -27,6 +27,7 @@ export const DEFAULT_CONFIG: ConfigState = {
   timeFontStyle: 'normal',
   focusSearchOnLoad: true,
   searchHistoryEnabled: true,
+  searchSuggestEnabled: true,
   openSearchInNewTab: false,
   exportIncludeBackground: true
 };
@@ -107,6 +108,10 @@ function applyImportedConfig(
     store.searchHistoryEnabled = config.searchHistoryEnabled;
     setItem('searchHistoryEnabled', config.searchHistoryEnabled);
   }
+  if (typeof config.searchSuggestEnabled === 'boolean') {
+    store.searchSuggestEnabled = config.searchSuggestEnabled;
+    setItem('searchSuggestEnabled', config.searchSuggestEnabled);
+  }
   if (typeof config.openSearchInNewTab === 'boolean') {
     store.openSearchInNewTab = config.openSearchInNewTab;
     setItem('openSearchInNewTab', config.openSearchInNewTab);
@@ -153,6 +158,10 @@ export const useConfigStore = defineStore('config', {
       searchHistoryEnabled: readBool(
         StorageKey.SearchHistoryEnabled,
         DEFAULT_CONFIG.searchHistoryEnabled
+      ),
+      searchSuggestEnabled: readBool(
+        StorageKey.SearchSuggestEnabled,
+        DEFAULT_CONFIG.searchSuggestEnabled
       ),
       openSearchInNewTab: readBool(StorageKey.OpenSearchInNewTab, DEFAULT_CONFIG.openSearchInNewTab),
       exportIncludeBackground: readBool(
@@ -215,6 +224,10 @@ export const useConfigStore = defineStore('config', {
       this.searchHistoryEnabled = Boolean(value);
       setItem(StorageKey.SearchHistoryEnabled, this.searchHistoryEnabled);
     },
+    setSearchSuggestEnabled(value: boolean) {
+      this.searchSuggestEnabled = Boolean(value);
+      setItem(StorageKey.SearchSuggestEnabled, this.searchSuggestEnabled);
+    },
     setOpenSearchInNewTab(value: boolean) {
       this.openSearchInNewTab = Boolean(value);
       setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
@@ -234,6 +247,7 @@ export const useConfigStore = defineStore('config', {
       this.timeFontStyle = DEFAULT_CONFIG.timeFontStyle;
       this.focusSearchOnLoad = DEFAULT_CONFIG.focusSearchOnLoad;
       this.searchHistoryEnabled = DEFAULT_CONFIG.searchHistoryEnabled;
+      this.searchSuggestEnabled = DEFAULT_CONFIG.searchSuggestEnabled;
       this.openSearchInNewTab = DEFAULT_CONFIG.openSearchInNewTab;
       this.exportIncludeBackground = DEFAULT_CONFIG.exportIncludeBackground;
       setItem(StorageKey.Theme, this.theme);
@@ -245,6 +259,7 @@ export const useConfigStore = defineStore('config', {
       setItem(StorageKey.TimeFontStyle, this.timeFontStyle);
       setItem(StorageKey.FocusSearchOnLoad, this.focusSearchOnLoad);
       setItem(StorageKey.SearchHistoryEnabled, this.searchHistoryEnabled);
+      setItem(StorageKey.SearchSuggestEnabled, this.searchSuggestEnabled);
       setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
       setItem(StorageKey.ExportIncludeBackground, this.exportIncludeBackground);
       setItem(StorageKey.HiddenEngineIds, '[]');

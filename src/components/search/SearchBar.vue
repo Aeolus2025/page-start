@@ -32,6 +32,7 @@
             :placeholder="(isFocused || pickerVisible) ? '输入以搜索...' : '搜索'"
             @focus="handleFocus"
             @blur="handleBlur"
+            @keydown="onInputKeydown"
             @keyup.enter="handleSearch"
           />
           <i
@@ -52,6 +53,14 @@
         @remove="removeHistoryItem"
         @clear="clearHistory"
       />
+      <SearchSuggest
+        :visible="showSuggestDropdown"
+        :items="suggestions"
+        :loading="suggestLoading"
+        :width-style="historyDropdownWidthStyle"
+        :highlight-index="suggestHighlightIndex"
+        @select="onSuggestSelect"
+      />
     </div>
     <SearchEnginePickerPanel
       v-model="currentEngine"
@@ -67,9 +76,11 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import SearchEnginePickerPanel from './SearchEnginePickerPanel.vue';
 import SearchEngineIcon from './SearchEngineIcon.vue';
 import SearchHistory from './SearchHistory.vue';
+import SearchSuggest from './SearchSuggest.vue';
 import { useSelectedEngine } from '@/composables/useSelectedEngine';
 import { useSearchFocus } from '@/composables/useSearchFocus';
 import { useSearchHistory } from '@/composables/useSearchHistory';
+import { useSearchSuggest } from '@/composables/useSearchSuggest';
 import { useSearchNavigate } from '@/composables/useSearchNavigate';
 import { useClickOutside } from '@/composables/useClickOutside';
 import { useConfigStore } from '@/store/config';
@@ -99,7 +110,28 @@ const { isFocused, handleFocus, handleBlur } = useSearchFocus((focused) => {
 });
 const { buildSearchUrl, navigateToSearchUrl } = useSearchNavigate(currentEngine);
 const { history: searchHistory, addHistory, clearHistory, removeItem: removeHistoryItem, refresh: refreshHistory } = useSearchHistory();
-const showHistoryDropdown = computed(() => (isFocused.value || pickerVisible.value) && config.searchHistoryEnabled && !pickerVisible.value);
+const searchSuggestEnabledRef = computed(() => config.searchSuggestEnabled);
+const {
+  suggestions,
+  loading: suggestLoading,
+  highlightIndex: suggestHighlightIndex,
+  incHighlight: suggestIncHighlight,
+  decHighlight: suggestDecHighlight
+} = useSearchSuggest(query, currentEngine, searchSuggestEnabledRef);
+const showSuggestDropdown = computed(
+  () =>
+    isFocused.value &&
+    !pickerVisible.value &&
+    query.value.trim() !== '' &&
+    config.searchSuggestEnabled
+);
+const showHistoryDropdown = computed(
+  () =>
+    isFocused.value &&
+    !pickerVisible.value &&
+    query.value.trim() === '' &&
+    config.searchHistoryEnabled
+);
 const historyList = computed(() => searchHistory.value);
 
 useClickOutside(blockRef, () => { pickerVisible.value = false; }, pickerVisible);
@@ -110,15 +142,16 @@ function syncHistoryWidth() {
   const w = wrapperRef.value.getBoundingClientRect().width;
   historyDropdownWidthStyle.value = w > 0 ? { width: `${Math.round(w)}px` } : {};
 }
-watch([showHistoryDropdown, wrapperRef], () => {
-  if (showHistoryDropdown.value) {
-    refreshHistory();
+const showAnyDropdown = computed(() => showHistoryDropdown.value || showSuggestDropdown.value);
+watch([showAnyDropdown, wrapperRef], () => {
+  if (showAnyDropdown.value) {
+    if (showHistoryDropdown.value) refreshHistory();
     nextTick(syncHistoryWidth);
   } else {
     historyDropdownWidthStyle.value = {};
   }
 }, { immediate: true });
-watch(showHistoryDropdown, (visible) => {
+watch(showAnyDropdown, (visible) => {
   if (visible) {
     nextTick(() => {
       syncHistoryWidth();
@@ -141,6 +174,39 @@ function onHistorySelect(keyword: string) {
   }
 }
 
+function onSuggestSelect(selected: string) {
+  const url = buildSearchUrl(selected);
+  if (url) {
+    addHistory(selected, { persistOnly: !config.openSearchInNewTab });
+    navigateToSearchUrl(url);
+  } else {
+    query.value = selected;
+    inputRef.value?.focus();
+  }
+}
+
+function onInputKeydown(e: KeyboardEvent) {
+  if (!showSuggestDropdown.value || suggestions.value.length === 0) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    suggestIncHighlight();
+    return;
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    suggestDecHighlight();
+    return;
+  }
+  if (e.key === 'Enter' && suggestHighlightIndex.value >= 0) {
+    const item = suggestions.value[suggestHighlightIndex.value];
+    if (item != null) {
+      e.preventDefault();
+      suggestSelectHandled.value = true;
+      onSuggestSelect(item);
+    }
+  }
+}
+
 const onWrapperClick = (e: MouseEvent) => {
   if (!isFocused.value && !pickerVisible.value && e.target === wrapperRef.value) {
     inputRef.value?.focus();
@@ -153,6 +219,7 @@ const onEngineTriggerClick = () => {
 };
 
 const engineIconError = ref(false);
+const suggestSelectHandled = ref(false);
 watch(currentEngine, () => { engineIconError.value = false; });
 
 const focusSearchInput = () => {
@@ -165,6 +232,10 @@ watch(pickerVisible, (visible) => {
 });
 
 const handleSearch = () => {
+  if (suggestSelectHandled.value) {
+    suggestSelectHandled.value = false;
+    return;
+  }
   const q = query.value.trim();
   if (!q) return;
   addHistory(q, { persistOnly: !config.openSearchInNewTab });
