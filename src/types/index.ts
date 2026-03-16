@@ -21,8 +21,13 @@ export interface ExportPayload {
   customEngines: { name: string; url: string }[];
 }
 
+/** 主题：浅色 / 深色 / 根据系统（prefers-color-scheme） */
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 /** 配置 store 的 state 类型 */
 export interface ConfigState {
+  /** 主题：light | dark | system */
+  theme: ThemeMode;
   backgroundImage: string;
   timeFormat24: boolean;
   timeShowSeconds: boolean;
@@ -55,6 +60,7 @@ export interface ShortcutItem {
 
 /** localStorage 使用到的键（不含全局前缀） */
 export enum StorageKey {
+  Theme = 'theme',
   BackgroundImage = 'backgroundImage',
   TimeFormat24 = 'timeFormat24',
   TimeShowSeconds = 'timeShowSeconds',

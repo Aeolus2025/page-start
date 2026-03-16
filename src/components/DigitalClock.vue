@@ -73,13 +73,23 @@ onUnmounted(() => {
 
 <style scoped>
 .clock {
-  color: rgba(255, 255, 255, 0.98);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.3);
+  color: var(--clock-color);
+  text-shadow: none;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   letter-spacing: -1px;
   margin: 0;
   padding: 0;
   line-height: 1;
+}
+
+/* 深色主题下时钟加轻微阴影以增强可读性 */
+[data-theme="dark"] .clock {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .clock {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+  }
 }
 
 .size-small {

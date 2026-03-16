@@ -1,0 +1,374 @@
+/**
+ * 全局基础样式与设计 token（与 UI/UX Pro Max 规范对齐）
+ *
+ * 主题逻辑：
+ *   - 浅色：data-theme="light" 或「根据系统」且系统为浅色
+ *   - 深色：data-theme="dark" 或「根据系统」且系统为深色
+ *   - 未设置或获取不到用户选择时，默认浅色（见 main.ts 兜底）
+ * html 的 data-theme 取值：light | dark | system
+ *
+ */
+
+/* ---------- 共用 + 浅色/深色调色板 ---------- */
+:root {
+  /* 共用：与主题无关 */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI',
+    sans-serif;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /*  浅色主题模式调色板  */
+  --light-color-bg: rgba(243, 244, 246, 1);                       /*  页面 / 表面：整体背景颜色  */
+  --light-color-surface: rgba(248, 250, 252, 0.96);               /*  页面 / 表面：前景容器背景  */
+  --light-color-surface-soft: rgba(226, 232, 240, 0.9);           /*  页面 / 表面：弱一点的前景背景  */
+  --light-color-border-subtle: rgba(148, 163, 184, 0.6);          /*  页面 / 表面：弱化分隔边框  */
+  --light-color-text-primary: rgba(15, 23, 42, 0.96);             /*  文字：主文字颜色  */
+  --light-color-text-secondary: rgba(51, 65, 85, 0.86);           /*  文字：次要说明文字颜色  */
+  --light-color-text-inverse: rgba(248, 250, 252, 0.98);          /*  文字：深色背景上的反色文字  */
+  --light-color-accent: rgba(79, 70, 229, 1);                     /*  品牌色：主强调颜色（按钮 / 焦点）  */
+  --light-color-accent-soft: rgba(79, 70, 229, 0.12);             /*  品牌色：浅色强调背景  */
+  --light-color-danger: rgba(239, 68, 68, 1);                     /*  功能色：危险 / 错误提示颜色  */
+  --light-color-input-bg: rgba(248, 250, 252, 0.6);               /*  输入 / 搜索框：未聚焦背景颜色  */
+  --light-color-input-bg-strong: rgba(255, 255, 255, 0.98);       /*  输入 / 搜索框：聚焦时背景颜色  */
+  --light-color-input-border: rgba(148, 163, 184, 0.65);          /*  输入 / 搜索框：默认边框颜色  */
+  --light-color-input-border-strong: rgba(148, 163, 184, 0.5);    /*  输入 / 搜索框：聚焦边框颜色  */
+  --light-color-input-placeholder: rgba(38, 45, 56, 0.9);         /*  输入 / 搜索框：占位符文字颜色  */
+  --light-color-input-shadow-soft: 0 8px 28px rgba(15, 23, 42, 0.18);  /*  输入 / 搜索框：普通阴影  */
+  --light-color-input-shadow-strong: 0 12px 40px rgba(15, 23, 42, 0.26); /*  输入 / 搜索框：更强的阴影  */
+  --light-color-switch-on-bg: rgba(79, 70, 229, 1);                    /*  开关组件：打开状态背景颜色（浅色模式） */
+  --light-color-icon-muted: rgba(15, 23, 42, 0.78);               /*  输入 / 搜索框：前缀 / 图标颜色  */
+  --light-glass-bg: rgba(255, 255, 255, 0.9);                     /*  玻璃拟态面板：背景颜色  */
+  --light-glass-bg-strong: rgba(255, 255, 255, 0.97);             /*  玻璃拟态面板：悬停 / 强调背景  */
+  --light-glass-border: rgba(148, 163, 184, 0.75);                /*  玻璃拟态面板：默认边框颜色  */
+  --light-glass-border-strong: rgba(148, 163, 184, 0.9);          /*  玻璃拟态面板：高亮边框颜色  */
+  --light-glass-text: rgba(15, 23, 42, 0.92);                     /*  玻璃拟态面板：主文字颜色  */
+  --light-glass-text-muted: rgba(51, 65, 85, 0.82);               /*  玻璃拟态面板：次要文字颜色  */
+  --light-glass-icon: rgba(15, 23, 42, 0.78);                     /*  玻璃拟态面板：图标颜色  */
+  --light-glass-scrim: rgba(0, 0, 0, 0.5);                        /*  弹窗遮罩层：背景颜色  */
+  --light-glass-input-bg: rgba(255, 255, 255, 0.98);              /*  设置 / 弹窗表单：输入框背景颜色  */
+  --light-glass-input-border: rgba(0, 0, 0, 0.12);                /*  设置 / 弹窗表单：输入框边框颜色  */
+  --light-glass-divider: rgba(0, 0, 0, 0.08);                     /*  设置 / 弹窗表单：分割线、弱边框颜色  */
+  --light-shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.18);        /*  阴影：大面积柔和阴影  */
+  --light-shadow-subtle: 0 6px 24px rgba(15, 23, 42, 0.15);       /*  阴影：小范围细节阴影  */
+  --light-bg-layer-brightness: 0.8;                               /*  背景层：正常状态亮度  */
+  --light-bg-layer-blur-brightness: 0.65;                         /*  背景层：虚化状态亮度  */
+  --light-shortcut-sheet-bg: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.16) 100%); /*  快捷方式面板：浅色渐变背景  */
+  --light-shortcut-sheet-border-color: rgba(255, 255, 255, 0.5);  /*  快捷方式面板：白色描边颜色  */
+  --light-clock-color: rgba(255, 255, 255, 1);                    /*  时钟：浅色主题下的文字颜色  */
+
+  /* 深色主题模式调色板 */
+  --dark-color-bg: rgba(2, 6, 23, 1);
+  --dark-color-surface: rgba(15, 23, 42, 0.92);
+  --dark-color-surface-soft: rgba(15, 23, 42, 0.75);
+  --dark-color-border-subtle: rgba(148, 163, 184, 0.75);
+  --dark-color-text-primary: rgba(248, 250, 252, 0.98);
+  --dark-color-text-secondary: rgba(191, 201, 214, 0.9);
+  --dark-color-text-inverse: rgba(15, 23, 42, 0.96);
+  --dark-color-accent: rgba(79, 70, 229, 1);
+  --dark-color-accent-soft: rgba(79, 70, 229, 0.12);
+  --dark-color-danger: rgba(239, 68, 68, 1);
+  --dark-color-input-bg: rgba(60, 60, 60, 0.5);
+  --dark-color-input-bg-strong: rgba(60, 60, 60, 1);
+  --dark-color-input-border: rgba(148, 163, 184, 0.5);
+  --dark-color-input-border-strong: rgba(148, 163, 184, 0.5);
+  --dark-color-input-placeholder: rgba(226, 232, 240, 0.72);
+  --dark-color-input-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.75);
+  --dark-color-input-shadow-strong: 0 18px 46px rgba(15, 23, 42, 0.9);
+  --dark-color-icon-muted: rgba(248, 250, 252, 0.92);
+  --dark-color-switch-on-bg: rgba(195, 194, 206, 0.75);
+  --dark-glass-bg: rgba(60, 60, 60, 0.55);
+  --dark-glass-bg-strong: rgba(60, 60, 60, 0.82);
+  --dark-glass-border: rgba(248, 250, 252, 0.18);
+  --dark-glass-border-strong: rgba(248, 250, 252, 0.26);
+  --dark-glass-text: rgba(248, 250, 252, 0.92);
+  --dark-glass-text-muted: rgba(226, 232, 240, 0.72);
+  --dark-glass-icon: rgba(248, 250, 252, 0.9);
+  --dark-glass-scrim: rgba(0, 0, 0, 0.6);
+  --dark-glass-input-bg: rgba(45, 45, 45, 0.95);
+  --dark-glass-input-border: rgba(248, 250, 252, 0.2);
+  --dark-glass-divider: rgba(255, 255, 255, 0.1);
+  --dark-shadow-soft: 0 22px 70px rgba(15, 23, 42, 0.75);
+  --dark-shadow-subtle: 0 10px 35px rgba(15, 23, 42, 0.7);
+  --dark-bg-layer-brightness: 0.7;
+  --dark-bg-layer-blur-brightness: 0.55;
+  --dark-shortcut-sheet-bg: var(--dark-glass-bg);
+  --dark-shortcut-sheet-border-color: var(--dark-glass-border);
+  /* 时钟颜色（深色主题与面板文字一致） */
+  --dark-clock-color: rgba(248, 250, 252, 0.96);
+}
+
+/* ---------- 浅色主题：仅做映射（用户选择「浅色」时生效） ---------- */
+[data-theme="light"] {
+  --color-bg: var(--light-color-bg);
+  --color-surface: var(--light-color-surface);
+  --color-surface-soft: var(--light-color-surface-soft);
+  --color-border-subtle: var(--light-color-border-subtle);
+  --color-text-primary: var(--light-color-text-primary);
+  --color-text-secondary: var(--light-color-text-secondary);
+  --color-text-inverse: var(--light-color-text-inverse);
+  --color-accent: var(--light-color-accent);
+  --color-accent-soft: var(--light-color-accent-soft);
+  --color-danger: var(--light-color-danger);
+  --color-input-bg: var(--light-color-input-bg);
+  --color-input-bg-strong: var(--light-color-input-bg-strong);
+  --color-input-border: var(--light-color-input-border);
+  --color-input-border-strong: var(--light-color-input-border-strong);
+  --color-input-placeholder: var(--light-color-input-placeholder);
+  --color-input-shadow-soft: var(--light-color-input-shadow-soft);
+  --color-input-shadow-strong: var(--light-color-input-shadow-strong);
+  --color-icon-muted: var(--light-color-icon-muted);
+  --glass-bg: var(--light-glass-bg);
+  --glass-bg-strong: var(--light-glass-bg-strong);
+  --glass-border: var(--light-glass-border);
+  --glass-border-strong: var(--light-glass-border-strong);
+  --glass-text: var(--light-glass-text);
+  --glass-text-muted: var(--light-glass-text-muted);
+  --glass-icon: var(--light-glass-icon);
+  --glass-scrim: var(--light-glass-scrim);
+  --glass-input-bg: var(--light-glass-input-bg);
+  --glass-input-border: var(--light-glass-input-border);
+  --glass-divider: var(--light-glass-divider);
+  --shadow-soft: var(--light-shadow-soft);
+  --shadow-subtle: var(--light-shadow-subtle);
+  --bg-layer-brightness: var(--light-bg-layer-brightness);
+  --bg-layer-blur-brightness: var(--light-bg-layer-blur-brightness);
+  --shortcut-sheet-bg: var(--light-shortcut-sheet-bg);
+  --shortcut-sheet-border-color: var(--light-shortcut-sheet-border-color);
+  --clock-color: var(--light-clock-color);
+  --switch-on-bg: var(--light-color-switch-on-bg);
+}
+
+/* ---------- 深色主题：仅做映射（用户选择「深色」时生效） ---------- */
+[data-theme="dark"] {
+  --color-bg: var(--dark-color-bg);
+  --color-surface: var(--dark-color-surface);
+  --color-surface-soft: var(--dark-color-surface-soft);
+  --color-border-subtle: var(--dark-color-border-subtle);
+  --color-text-primary: var(--dark-color-text-primary);
+  --color-text-secondary: var(--dark-color-text-secondary);
+  --color-text-inverse: var(--dark-color-text-inverse);
+  --color-accent: var(--dark-color-accent);
+  --color-accent-soft: var(--dark-color-accent-soft);
+  --color-danger: var(--dark-color-danger);
+  --color-input-bg: var(--dark-color-input-bg);
+  --color-input-bg-strong: var(--dark-color-input-bg-strong);
+  --color-input-border: var(--dark-color-input-border);
+  --color-input-border-strong: var(--dark-color-input-border-strong);
+  --color-input-placeholder: var(--dark-color-input-placeholder);
+  --color-input-shadow-soft: var(--dark-color-input-shadow-soft);
+  --color-input-shadow-strong: var(--dark-color-input-shadow-strong);
+  --color-icon-muted: var(--dark-color-icon-muted);
+  --glass-bg: var(--dark-glass-bg);
+  --glass-bg-strong: var(--dark-glass-bg-strong);
+  --glass-border: var(--dark-glass-border);
+  --glass-border-strong: var(--dark-glass-border-strong);
+  --glass-text: var(--dark-glass-text);
+  --glass-text-muted: var(--dark-glass-text-muted);
+  --glass-icon: var(--dark-glass-icon);
+  --glass-scrim: var(--dark-glass-scrim);
+  --glass-input-bg: var(--dark-glass-input-bg);
+  --glass-input-border: var(--dark-glass-input-border);
+  --glass-divider: var(--dark-glass-divider);
+  --shadow-soft: var(--dark-shadow-soft);
+  --shadow-subtle: var(--dark-shadow-subtle);
+  --bg-layer-brightness: var(--dark-bg-layer-brightness);
+  --bg-layer-blur-brightness: var(--dark-bg-layer-blur-brightness);
+  --shortcut-sheet-bg: var(--dark-shortcut-sheet-bg);
+  --shortcut-sheet-border-color: var(--dark-shortcut-sheet-border-color);
+  --clock-color: var(--dark-clock-color);
+  --switch-on-bg: var(--dark-color-switch-on-bg);
+}
+
+/* ---------- 根据系统：仅做映射，按 prefers-color-scheme 选用浅色或深色 ---------- */
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --color-bg: var(--light-color-bg);
+    --color-surface: var(--light-color-surface);
+    --color-surface-soft: var(--light-color-surface-soft);
+    --color-border-subtle: var(--light-color-border-subtle);
+    --color-text-primary: var(--light-color-text-primary);
+    --color-text-secondary: var(--light-color-text-secondary);
+    --color-text-inverse: var(--light-color-text-inverse);
+    --color-accent: var(--light-color-accent);
+    --color-accent-soft: var(--light-color-accent-soft);
+    --color-danger: var(--light-color-danger);
+    --color-input-bg: var(--light-color-input-bg);
+    --color-input-bg-strong: var(--light-color-input-bg-strong);
+    --color-input-border: var(--light-color-input-border);
+    --color-input-border-strong: var(--light-color-input-border-strong);
+    --color-input-placeholder: var(--light-color-input-placeholder);
+    --color-input-shadow-soft: var(--light-color-input-shadow-soft);
+    --color-input-shadow-strong: var(--light-color-input-shadow-strong);
+    --color-icon-muted: var(--light-color-icon-muted);
+    --glass-bg: var(--light-glass-bg);
+    --glass-bg-strong: var(--light-glass-bg-strong);
+    --glass-border: var(--light-glass-border);
+    --glass-border-strong: var(--light-glass-border-strong);
+    --glass-text: var(--light-glass-text);
+    --glass-text-muted: var(--light-glass-text-muted);
+    --glass-icon: var(--light-glass-icon);
+    --glass-scrim: var(--light-glass-scrim);
+    --glass-input-bg: var(--light-glass-input-bg);
+    --glass-input-border: var(--light-glass-input-border);
+    --glass-divider: var(--light-glass-divider);
+    --shadow-soft: var(--light-shadow-soft);
+    --shadow-subtle: var(--light-shadow-subtle);
+    --bg-layer-brightness: var(--light-bg-layer-brightness);
+    --bg-layer-blur-brightness: var(--light-bg-layer-blur-brightness);
+    --shortcut-sheet-bg: var(--light-shortcut-sheet-bg);
+    --shortcut-sheet-border-color: var(--light-shortcut-sheet-border-color);
+    --clock-color: var(--light-clock-color);
+    --switch-on-bg: var(--light-color-switch-on-bg);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --color-bg: var(--dark-color-bg);
+    --color-surface: var(--dark-color-surface);
+    --color-surface-soft: var(--dark-color-surface-soft);
+    --color-border-subtle: var(--dark-color-border-subtle);
+    --color-text-primary: var(--dark-color-text-primary);
+    --color-text-secondary: var(--dark-color-text-secondary);
+    --color-text-inverse: var(--dark-color-text-inverse);
+    --color-accent: var(--dark-color-accent);
+    --color-accent-soft: var(--dark-color-accent-soft);
+    --color-danger: var(--dark-color-danger);
+    --color-input-bg: var(--dark-color-input-bg);
+    --color-input-bg-strong: var(--dark-color-input-bg-strong);
+    --color-input-border: var(--dark-color-input-border);
+    --color-input-border-strong: var(--dark-color-input-border-strong);
+    --color-input-placeholder: var(--dark-color-input-placeholder);
+    --color-input-shadow-soft: var(--dark-color-input-shadow-soft);
+    --color-input-shadow-strong: var(--dark-color-input-shadow-strong);
+    --color-icon-muted: var(--dark-color-icon-muted);
+    --glass-bg: var(--dark-glass-bg);
+    --glass-bg-strong: var(--dark-glass-bg-strong);
+    --glass-border: var(--dark-glass-border);
+    --glass-border-strong: var(--dark-glass-border-strong);
+    --glass-text: var(--dark-glass-text);
+    --glass-text-muted: var(--dark-glass-text-muted);
+    --glass-icon: var(--dark-glass-icon);
+    --glass-scrim: var(--dark-glass-scrim);
+    --glass-input-bg: var(--dark-glass-input-bg);
+    --glass-input-border: var(--dark-glass-input-border);
+    --glass-divider: var(--dark-glass-divider);
+    --shadow-soft: var(--dark-shadow-soft);
+    --shadow-subtle: var(--dark-shadow-subtle);
+    --bg-layer-brightness: var(--dark-bg-layer-brightness);
+    --bg-layer-blur-brightness: var(--dark-bg-layer-blur-brightness);
+    --shortcut-sheet-bg: var(--dark-shortcut-sheet-bg);
+    --shortcut-sheet-border-color: var(--dark-shortcut-sheet-border-color);
+    --clock-color: var(--dark-clock-color);
+    --switch-on-bg: var(--dark-color-switch-on-bg);
+  }
+}
+
+/* 兜底：未设置 data-theme 时默认浅色（仅做映射） */
+:root:not([data-theme]) {
+  --color-bg: var(--light-color-bg);
+  --color-surface: var(--light-color-surface);
+  --color-surface-soft: var(--light-color-surface-soft);
+  --color-border-subtle: var(--light-color-border-subtle);
+  --color-text-primary: var(--light-color-text-primary);
+  --color-text-secondary: var(--light-color-text-secondary);
+  --color-text-inverse: var(--light-color-text-inverse);
+  --color-accent: var(--light-color-accent);
+  --color-accent-soft: var(--light-color-accent-soft);
+  --color-danger: var(--light-color-danger);
+  --color-input-bg: var(--light-color-input-bg);
+  --color-input-bg-strong: var(--light-color-input-bg-strong);
+  --color-input-border: var(--light-color-input-border);
+  --color-input-border-strong: var(--light-color-input-border-strong);
+  --color-input-placeholder: var(--light-color-input-placeholder);
+  --color-input-shadow-soft: var(--light-color-input-shadow-soft);
+  --color-input-shadow-strong: var(--light-color-input-shadow-strong);
+  --color-icon-muted: var(--light-color-icon-muted);
+  --glass-bg: var(--light-glass-bg);
+  --glass-bg-strong: var(--light-glass-bg-strong);
+  --glass-border: var(--light-glass-border);
+  --glass-border-strong: var(--light-glass-border-strong);
+  --glass-text: var(--light-glass-text);
+  --glass-text-muted: var(--light-glass-text-muted);
+  --glass-icon: var(--light-glass-icon);
+  --glass-scrim: var(--light-glass-scrim);
+  --glass-input-bg: var(--light-glass-input-bg);
+  --glass-input-border: var(--light-glass-input-border);
+  --glass-divider: var(--light-glass-divider);
+  --shadow-soft: var(--light-shadow-soft);
+  --shadow-subtle: var(--light-shadow-subtle);
+  --bg-layer-brightness: var(--light-bg-layer-brightness);
+  --bg-layer-blur-brightness: var(--light-bg-layer-blur-brightness);
+  --shortcut-sheet-bg: var(--light-shortcut-sheet-bg);
+  --shortcut-sheet-border-color: var(--light-shortcut-sheet-border-color);
+  --clock-color: var(--light-clock-color);
+  --switch-on-bg: var(--light-color-switch-on-bg);
+}
+
+/* ---------- 基础重置与全局布局 ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--color-bg);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* 可访问性：键盘焦点环 */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* 自定义滚动条（WebKit） */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.55);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* 尊重用户「减少动效」系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

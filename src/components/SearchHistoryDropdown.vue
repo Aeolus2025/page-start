@@ -60,11 +60,11 @@ defineEmits<{
   max-height: 280px;
   border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(248,250,252,0.96) 0%, rgba(226,232,240,0.92) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-subtle);
   z-index: 10;
 }
 .search-history-list {
@@ -81,12 +81,12 @@ defineEmits<{
   gap: 8px;
   padding: 10px 20px;
   font-size: 15px;
-  color: rgba(0, 0, 0, 0.92);
+  color: var(--color-text-primary);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 .search-history-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-accent-soft);
 }
 .search-history-item-text {
   flex: 1;
@@ -95,13 +95,14 @@ defineEmits<{
 .search-history-item-remove {
   flex-shrink: 0;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 2px;
-  transition: color 0.15s;
+  transition: color var(--transition-fast), transform var(--transition-fast);
 }
 .search-history-item-remove:hover {
-  color: rgba(0, 0, 0, 0.9);
+  color: var(--color-accent);
+  transform: translateY(-1px);
 }
 .search-history-clear {
   display: flex;
@@ -112,16 +113,16 @@ defineEmits<{
   padding: 10px 20px;
   margin: 0;
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(148, 163, 184, 0.45);
   background: transparent;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.82);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 .search-history-clear:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(0, 0, 0, 0.95);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 .search-history-clear .iconfont {
   font-size: 16px;

@@ -163,35 +163,37 @@ function onCancel() {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--glass-scrim);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  box-shadow: none;
 }
 
 .add-modal {
   width: 100%;
   max-width: 340px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%);
-  backdrop-filter: blur(20px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  border: 1px solid var(--glass-border);
 }
 
 .add-title {
   margin: 0 0 20px;
   font-size: 1.1rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: var(--glass-text);
 }
 
 .add-form label {
   display: block;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--glass-text-muted);
   margin-bottom: 6px;
 }
 
@@ -202,16 +204,22 @@ function onCancel() {
 .add-field input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--glass-input-border);
   border-radius: 10px;
   font-size: 14px;
   box-sizing: border-box;
+  background: var(--glass-input-bg);
+  color: var(--glass-text);
+}
+
+.add-field input::placeholder {
+  color: var(--color-input-placeholder);
 }
 
 .add-field input[type="text"]:focus,
 .add-field input[type="url"]:focus {
   outline: none;
-  border-color: rgba(0, 0, 0, 0.4);
+  border-color: var(--glass-border-strong);
 }
 
 .add-icon-upload {
@@ -233,7 +241,7 @@ function onCancel() {
   justify-content: center;
   width: 72px;
   height: 72px;
-  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border: 1px dashed var(--glass-input-border);
   border-radius: 12px;
   cursor: pointer;
   overflow: hidden;
@@ -241,8 +249,8 @@ function onCancel() {
 }
 
 .add-icon-label:hover {
-  border-color: rgba(0, 0, 0, 0.35);
-  background: rgba(0, 0, 0, 0.04);
+  border-color: var(--glass-border-strong);
+  background: var(--glass-divider);
 }
 
 .add-icon-preview {
@@ -253,27 +261,28 @@ function onCancel() {
 
 .add-icon-placeholder {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--glass-text-muted);
 }
 
 .add-icon-clear {
   padding: 6px 12px;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.7);
-  background: rgba(0, 0, 0, 0.08);
+  color: var(--glass-text-muted);
+  background: var(--glass-divider);
   border: none;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .add-icon-clear:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--glass-input-border);
+  color: var(--glass-text);
 }
 
 .add-error {
   margin: 0 0 12px;
   font-size: 13px;
-  color: #c62828;
+  color: var(--color-danger);
 }
 
 .add-actions {
@@ -294,21 +303,48 @@ function onCancel() {
 }
 
 .btn-cancel {
-  background: rgba(0, 0, 0, 0.08);
-  color: rgba(0, 0, 0, 0.8);
+  background: var(--glass-divider);
+  color: var(--glass-text);
 }
 
 .btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--glass-input-border);
 }
 
 .btn-submit {
-  background: rgba(0, 0, 0, 0.75);
-  color: white;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
 }
 
 .btn-submit:hover {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(67, 56, 202, 1);
+}
+
+/* 深色模式（用户选择「深色」时生效） */
+[data-theme="dark"] .add-backdrop {
+  background: rgba(0, 0, 0, 0.28);
+}
+[data-theme="dark"] .add-modal {
+  background: rgba(60, 60, 60, 0.96);
+  border: 1px solid rgba(248, 250, 252, 0.22);
+  box-shadow: none;
+  outline: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+/* 根据系统且系统为深色时 */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .add-backdrop {
+    background: rgba(0, 0, 0, 0.28);
+  }
+  [data-theme="system"] .add-modal {
+    background: rgba(60, 60, 60, 0.96);
+    border: 1px solid rgba(248, 250, 252, 0.22);
+    box-shadow: none;
+    outline: none;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
 }
 
 .modal-fade-enter-active,

@@ -68,18 +68,18 @@ const firstLetter = computed(() => getFirstLetter(props.item.name));
   width: 88px;
   min-width: 88px;
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: rgba(255, 255, 255, 0.98);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(8px);
+  color: var(--glass-text);
+  text-shadow: none;
+  box-shadow: none;
   cursor: pointer;
-  transition: 0.25s;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-normal);
   text-decoration: none;
   box-sizing: border-box;
   position: relative;
@@ -91,8 +91,10 @@ button.card {
 }
 
 .card-link:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  background: var(--glass-bg-strong);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: none;
+  border-color: var(--glass-border-strong);
 }
 
 .card-actions {
@@ -166,7 +168,7 @@ button.card {
   height: 40px;
   margin-bottom: 4px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--glass-bg-strong);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,7 +184,7 @@ button.card {
 .card-icon-letter-wrap {
   font-size: 18px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--glass-text);
   line-height: 1;
 }
 

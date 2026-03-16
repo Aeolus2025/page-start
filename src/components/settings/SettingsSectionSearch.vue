@@ -50,8 +50,13 @@ function onOpenSearchInNewTabChange(e: Event) {
   justify-content: space-between;
   gap: 16px;
   padding: 10px 0;
+  border-bottom: 1px solid var(--glass-divider);
 }
-.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.88); }
+
+.option-label {
+  font-size: 14px;
+  color: var(--glass-text);
+}
 .switch-label {
   position: relative;
   display: inline-block;
@@ -63,7 +68,7 @@ function onOpenSearchInNewTabChange(e: Event) {
 .switch-slider {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--glass-input-border);
   border-radius: 24px;
   transition: background 0.25s;
 }
@@ -74,11 +79,11 @@ function onOpenSearchInNewTabChange(e: Event) {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background: white;
+  background: var(--glass-bg-strong);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s;
 }
-.switch-label input:checked + .switch-slider { background: rgba(0, 0, 0, 0.6); }
+.switch-label input:checked + .switch-slider { background: var(--switch-on-bg); }
 .switch-label input:checked + .switch-slider::before { transform: translateX(20px); }
 </style>

@@ -35,7 +35,7 @@
  * 根组件：背景、时钟、搜索栏 / 快捷面板切换、设置入口。
  * 右键空白处打开快捷面板，点击 contentBlock 外关闭。
  */
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useConfigStore } from '@/store/config';
 import { useShortcutPanel } from '@/composables/useShortcutPanel';
@@ -45,7 +45,13 @@ import ShortcutGrid from './components/ShortcutGrid.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
 
 const config = useConfigStore();
-const { focusSearchOnLoad } = storeToRefs(config);
+const { focusSearchOnLoad, theme } = storeToRefs(config);
+
+function applyTheme(mode: string) {
+  document.documentElement.setAttribute('data-theme', mode);
+}
+onMounted(() => applyTheme(theme.value));
+watch(theme, (mode) => applyTheme(mode));
 
 const contentBlockRef = ref<HTMLElement | null>(null);
 const {
@@ -96,16 +102,32 @@ function openSettings() {
 </script>
 
 <style>
-body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; overflow-y: overlay; }
-.container { position: relative; min-height: 100vh; width: 100%; }
+body, html, #app {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-y: overlay;
+}
+.container {
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+}
 .background-layer {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  transition: all 0.5s ease; z-index: 1;
+  filter: brightness(var(--bg-layer-brightness));
+  background-color: rgba(0, 0, 0, 1);
+  transition: filter var(--transition-normal), transform var(--transition-normal), opacity var(--transition-normal);
+  z-index: 1;
 }
-.background-layer.is-blur { filter: brightness(0.7) blur(15px); transform: scale(1.05); }
+.background-layer.is-blur {
+  filter: brightness(var(--bg-layer-blur-brightness)) blur(18px);
+  transform: scale(1.04);
+}
 .content-layer {
   position: relative;
   display: flex;
@@ -143,24 +165,36 @@ body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; ov
   position: fixed; top: 16px; right: 16px; z-index: 5;
   width: 40px; height: 40px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(8px);
-  color: white; font-size: 20px; cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  color: var(--glass-icon);
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: none;
 }
-.settings-fab:hover { background: rgba(255, 255, 255, 0.48); transform: scale(1.05); }
+.settings-fab:hover {
+  background: var(--glass-bg-strong);
+  transform: scale(1.05) translateY(-1px);
+  box-shadow: none;
+  border-color: var(--glass-border-strong);
+}
 .shortcut-sheet {
   align-self: center;
   width: fit-content;
   min-width: 100%;
   max-width: 700px;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--shortcut-sheet-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--shortcut-sheet-border-color);
   border-radius: 24px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-soft);
   box-sizing: border-box;
+  color: var(--glass-text);
 }
 .slide-down-enter-active,
 .slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
@@ -174,4 +208,32 @@ body, html, #app { margin: 0; padding: 0; min-height: 100%; overflow-y: auto; ov
 .fade-leave-to { opacity: 0; }
 .fade-enter-to,
 .fade-leave-from { opacity: 1; }
+
+/* 深色：快捷面板去掉阴影（背景/边框由 style.css token 控制） */
+[data-theme="dark"] .shortcut-sheet {
+  box-shadow: none;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .shortcut-sheet {
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .content-layer {
+    padding-top: 24vh;
+  }
+  .content-layer.shifted {
+    padding-top: 16vh;
+  }
+  .shortcut-sheet {
+    max-width: 100%;
+    border-radius: 20px;
+    padding: 16px;
+  }
+  .settings-fab {
+    top: 12px;
+    right: 12px;
+  }
+}
 </style>

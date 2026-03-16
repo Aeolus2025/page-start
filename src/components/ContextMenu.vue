@@ -51,8 +51,8 @@ defineExpose({ showMenu });
 <style scoped>
 .context-menu {
   position: fixed;
-  background: white;
-  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(221, 221, 221, 1);
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   z-index: 1000;
@@ -70,11 +70,11 @@ defineExpose({ showMenu });
 }
 
 .menu-item:hover {
-  background-color: #f5f5f5;
+  background-color: rgba(245, 245, 245, 1);
 }
 
 .menu-shortcut {
-  color: #666;
+  color: rgba(102, 102, 102, 1);
   font-size: 12px;
 }
 </style>

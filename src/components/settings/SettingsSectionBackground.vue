@@ -89,20 +89,20 @@ function removeBg() {
 .bg-preview-wrap {
   border-radius: 12px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--glass-divider);
   margin-bottom: 12px;
 }
 .bg-preview { height: 120px; width: 100%; }
 .bg-error {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #c62828;
+  color: var(--color-danger);
 }
 .bg-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .bg-hint {
   margin: 10px 0 0;
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--glass-text-muted);
 }
 .file-input { position: absolute; width: 0; height: 0; opacity: 0; }
 .btn {
@@ -115,15 +115,15 @@ function removeBg() {
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary {
-  background: rgba(0, 0, 0, 0.75);
-  color: white;
+  background: var(--glass-text);
+  color: var(--color-text-inverse);
   position: relative;
 }
-.btn-primary:hover:not(:disabled) { background: rgba(0, 0, 0, 0.85); }
+.btn-primary:hover:not(:disabled) { background: var(--glass-icon); }
 .btn-outline {
   background: transparent;
-  color: rgba(0, 0, 0, 0.75);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: var(--glass-text);
+  border: 1px solid var(--glass-input-border);
 }
-.btn-outline:hover:not(:disabled) { background: rgba(0, 0, 0, 0.06); }
+.btn-outline:hover:not(:disabled) { background: var(--glass-divider); }
 </style>

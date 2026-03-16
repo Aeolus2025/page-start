@@ -13,7 +13,9 @@
         @remove="removeItem"
       />
       <button type="button" class="card add-card" aria-label="添加快捷方式" @click="openAdd">
-        <i class="iconfont icon-jia" aria-hidden="true"></i>
+        <span class="add-card-inner">
+          <span class="add-card-icon">+</span>
+        </span>
       </button>
     </div>
 
@@ -96,6 +98,7 @@ function handleEditorCancel() {
   display: flex;
   justify-content: center;
 }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 4), 88px);
@@ -103,15 +106,57 @@ function handleEditorCancel() {
   margin: 0;
   width: fit-content;
 }
+
 .grid-empty {
   /* 空时仅一个添加按钮，保持居中 */
   justify-items: center;
 }
-.add-card .iconfont {
-  font-size: 36px;
-  color: inherit;
-}
+
+/* 添加按钮：和 ShortcutCard 尺寸一致，无虚线 */
 .add-card {
-  border-style: dashed;
+  width: 88px;
+  min-width: 88px;
+  aspect-ratio: 1;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--glass-text);
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-normal);
+}
+
+.add-card:hover {
+  border-color: var(--glass-border-strong);
+  background: var(--glass-bg-strong);
+  box-shadow: none;
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* 内层只负责放 + 号，不要任何边框/虚线 */
+.add-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: none;                
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.add-card-icon {
+  font-size: 22px;
+  line-height: 1;
 }
 </style>

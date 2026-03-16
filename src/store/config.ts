@@ -4,13 +4,21 @@
  */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
-import type { ConfigState, ExportPayload } from '@/types';
+import type { ConfigState, ExportPayload, ThemeMode } from '@/types';
 import { StorageKey } from '@/types';
 
-const defaultBg = '/background.jpg';
+const THEME_VALUES: ThemeMode[] = ['light', 'dark', 'system'];
+function readTheme(key: StorageKey, defaultValue: ThemeMode): ThemeMode {
+  const v = getItem(key);
+  if (v === null || v === '') return defaultValue;
+  return THEME_VALUES.includes(v as ThemeMode) ? (v as ThemeMode) : defaultValue;
+}
+
+const defaultBg = '/image.jpg';
 
 /** 配置默认值，用于初始化和恢复默认 */
 export const DEFAULT_CONFIG: ConfigState = {
+  theme: 'light',
   backgroundImage: '',
   timeFormat24: true,
   timeShowSeconds: false,
@@ -62,6 +70,10 @@ function applyImportedConfig(
   config: Record<string, unknown> | undefined
 ): void {
   if (!config || typeof config !== 'object') return;
+  if (THEME_VALUES.includes(config.theme as ThemeMode)) {
+    store.theme = config.theme as ThemeMode;
+    setItem('theme', store.theme as string);
+  }
   if (typeof config.backgroundImage === 'string') {
     store.backgroundImage = config.backgroundImage;
     setItem('backgroundImage', config.backgroundImage);
@@ -125,6 +137,7 @@ function persistImportedEngineData(
 export const useConfigStore = defineStore('config', {
   state(): ConfigState {
     return {
+      theme: readTheme(StorageKey.Theme, DEFAULT_CONFIG.theme),
       backgroundImage: readStr(StorageKey.BackgroundImage, DEFAULT_CONFIG.backgroundImage),
       timeFormat24: readBool(StorageKey.TimeFormat24, DEFAULT_CONFIG.timeFormat24),
       timeShowSeconds: readBool(StorageKey.TimeShowSeconds, DEFAULT_CONFIG.timeShowSeconds),
@@ -159,6 +172,11 @@ export const useConfigStore = defineStore('config', {
     }
   },
   actions: {
+    setTheme(value: ThemeMode) {
+      if (!THEME_VALUES.includes(value)) return;
+      this.theme = value;
+      setItem(StorageKey.Theme, this.theme);
+    },
     setBackgroundImage(url: string) {
       this.backgroundImage = url || '';
       setItem(StorageKey.BackgroundImage, this.backgroundImage);
@@ -207,6 +225,7 @@ export const useConfigStore = defineStore('config', {
     },
     /** 恢复所有配置为默认值并持久化 */
     resetToDefaults() {
+      this.theme = DEFAULT_CONFIG.theme;
       this.backgroundImage = DEFAULT_CONFIG.backgroundImage;
       this.timeFormat24 = DEFAULT_CONFIG.timeFormat24;
       this.timeShowSeconds = DEFAULT_CONFIG.timeShowSeconds;
@@ -217,6 +236,7 @@ export const useConfigStore = defineStore('config', {
       this.searchHistoryEnabled = DEFAULT_CONFIG.searchHistoryEnabled;
       this.openSearchInNewTab = DEFAULT_CONFIG.openSearchInNewTab;
       this.exportIncludeBackground = DEFAULT_CONFIG.exportIncludeBackground;
+      setItem(StorageKey.Theme, this.theme);
       setItem(StorageKey.BackgroundImage, this.backgroundImage);
       setItem(StorageKey.TimeFormat24, this.timeFormat24);
       setItem(StorageKey.TimeShowSeconds, this.timeShowSeconds);

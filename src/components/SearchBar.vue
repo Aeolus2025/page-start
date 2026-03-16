@@ -185,17 +185,34 @@ onMounted(() => {
   padding: 0 20px;
   box-sizing: border-box;
   border-radius: 24px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.12) 100%);
+  /* 非聚焦默认：浅色更亮更暖；深色更暗更克制（由 token 控制） */
+  background: var(--sb-bg-idle);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  transition: box-shadow 0.3s ease, background 0.3s ease;
+  border: 1px solid var(--sb-border-idle);
+  /* 默认态：无整体矩形阴影，仅依靠背景与虚化营造层级 */
+  box-shadow: none;
+  transition:
+    box-shadow var(--transition-normal),
+    background var(--transition-normal),
+    border-color var(--transition-normal),
+    transform var(--transition-fast);
   overflow: hidden;
 }
+.search-wrapper:hover:not(.focused) {
+  /* 非聚焦 + 悬停：浅色逐步变亮变实；深色逐步变暗变实 */
+  background: var(--sb-bg-hover);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-color: var(--sb-border-hover);
+  /* 取消外部矩形投影，仅保留边缘高亮 */
+  box-shadow: 0 0 0 1px var(--color-accent-soft);
+}
 .search-wrapper.focused {
-  background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding-left: 9px;
+  background: var(--color-input-bg-strong);
+  /* 聚焦态：边框更清晰但无大块阴影，保持干净 */
+  border-color: var(--color-input-border-strong);
+  box-shadow: none;
 }
 .search-input-area {
   flex: 1;
@@ -211,9 +228,11 @@ onMounted(() => {
   background: transparent;
   padding: 10px 12px;
   font-size: 15px;
-  color: rgba(0, 0, 0, 0.92);
+  color: var(--color-text-primary);
 }
-.search-input::placeholder { color: rgba(0, 0, 0, 0.6); }
+.search-input::placeholder {
+  color: var(--color-input-placeholder);
+}
 .search-input.single { text-align: center; }
 /* 仅搜索图标靠右：与左侧 padding-left: 1px 对应，用负 margin 贴右边缘 */
 .search-icon {
@@ -227,11 +246,14 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
-  color: rgba(0, 0, 0, 0.68);
-  transition: color 0.2s;
+  color: var(--color-icon-muted);
+  transition: color var(--transition-fast), transform var(--transition-fast);
   box-sizing: border-box;
 }
-.search-icon:hover { color: rgba(0, 0, 0, 0.9); }
+.search-icon:hover {
+  color: var(--color-accent);
+  transform: translateY(-1px);
+}
 .engine-trigger {
   flex-shrink: 0;
   width: 52px;
@@ -241,12 +263,14 @@ onMounted(() => {
   gap: 6px;
   padding: 6px 0;
   cursor: pointer;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-icon-muted);
   font-size: 14px;
   user-select: none;
   box-sizing: border-box;
 }
-.engine-trigger:hover { color: rgba(0, 0, 0, 0.95); }
+.engine-trigger:hover {
+  color: var(--color-accent);
+}
 .engine-chevron { font-size: 10px; opacity: 0.8; }
 .search-block {
   display: flex;
@@ -257,6 +281,29 @@ onMounted(() => {
   min-width: 0;
   position: relative;
   box-sizing: border-box;
+  /* 组件级色板：浅色逐步变亮变实；深色逐步变暗变实 */
+  --sb-bg-idle: rgba(255, 252, 240, 0.35);
+  --sb-border-idle: rgba(255, 250, 230, 0.7);
+  --sb-bg-hover: rgba(255, 252, 240, 0.75);
+  --sb-border-hover: rgba(255, 252, 240, 0.95);
+  --sb-shadow-hover: none;
+}
+
+[data-theme="dark"] .search-block {
+  --sb-bg-idle: rgba(60, 60, 60, 0.35);
+  --sb-border-idle: rgba(248, 250, 252, 0.18);
+  --sb-bg-hover: rgba(60, 60, 60, 0.58);
+  --sb-border-hover: rgba(248, 250, 252, 0.26);
+  --sb-shadow-hover: none;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .search-block {
+    --sb-bg-idle: rgba(60, 60, 60, 0.35);
+    --sb-border-idle: rgba(248, 250, 252, 0.18);
+    --sb-bg-hover: rgba(60, 60, 60, 0.58);
+    --sb-border-hover: rgba(248, 250, 252, 0.26);
+    --sb-shadow-hover: none;
+  }
 }
 .search-bar-and-history {
   position: relative;
@@ -265,5 +312,12 @@ onMounted(() => {
   max-width: 520px;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .search-wrapper {
+    min-height: 52px;
+    padding-inline: 16px;
+  }
 }
 </style>

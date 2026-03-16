@@ -96,5 +96,5 @@ function confirm() {
 .add-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .add-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
 .add-btn.cancel { background: rgba(0,0,0,0.08); }
-.add-btn.confirm { background: rgba(0,0,0,0.2); color: #fff; }
+.add-btn.confirm { background: rgba(0,0,0,0.2); color: rgba(255, 255, 255, 1); }
 </style>

@@ -73,17 +73,16 @@ function onTimeFontStyleChange(e: Event) {
   justify-content: space-between;
   gap: 16px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--glass-divider);
 }
-.option-row:last-child { border-bottom: none; }
-.option-label { font-size: 14px; color: rgba(0, 0, 0, 0.88); }
+.option-label { font-size: 14px; color: var(--glass-text); }
 .option-group { display: flex; gap: 16px; }
 .radio-label {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--glass-text);
   cursor: pointer;
 }
 .radio-label input { cursor: pointer; }
@@ -98,7 +97,7 @@ function onTimeFontStyleChange(e: Event) {
 .switch-slider {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--glass-input-border);
   border-radius: 24px;
   transition: background 0.25s;
 }
@@ -109,21 +108,31 @@ function onTimeFontStyleChange(e: Event) {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background: white;
+  background: var(--glass-bg-strong);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s;
 }
-.switch-label input:checked + .switch-slider { background: rgba(0, 0, 0, 0.6); }
+.switch-label input:checked + .switch-slider { background: var(--color-accent); }
 .switch-label input:checked + .switch-slider::before { transform: translateX(20px); }
 .select {
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-input-border);
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.9);
-  background: white;
+  color: var(--glass-text);
+  background: var(--glass-input-bg);
   cursor: pointer;
   min-width: 100px;
+}
+
+/* 深色主题：开关打开状态使用柔和一点的紫色，减少刺眼感（统一在 style.css 中配置颜色） */
+[data-theme="dark"] .switch-label input:checked + .switch-slider {
+  background: var(--switch-on-bg);
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .switch-label input:checked + .switch-slider {
+    background: var(--switch-on-bg);
+  }
 }
 </style>
