@@ -52,5 +52,10 @@ export function useSearchHistory() {
     saveHistory(next);
   }
 
-  return { history, addHistory, clearHistory, removeItem };
+  /** 从 storage 重新加载并更新当前列表（用于下拉展开时同步，修复同页签搜索后返回的 bfcache 陈旧数据） */
+  function refresh() {
+    list.value = loadHistory();
+  }
+
+  return { history, addHistory, clearHistory, removeItem, refresh };
 }

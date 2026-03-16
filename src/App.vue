@@ -17,7 +17,7 @@
         />
         <Transition name="slide-down">
           <div v-if="showShortcutPanel" class="shortcut-sheet" @contextmenu.stop.prevent>
-            <ShortcutGrid />
+            <ShortCutsPanel />
           </div>
         </Transition>
       </div>
@@ -40,8 +40,8 @@ import { storeToRefs } from 'pinia';
 import { useConfigStore } from '@/store/config';
 import { useShortcutPanel } from '@/composables/useShortcutPanel';
 import DigitalClock from './components/DigitalClock.vue';
-import SearchBar from './components/SearchBar.vue';
-import ShortcutGrid from './components/ShortcutGrid.vue';
+import SearchBar from './components/search/SearchBar.vue';
+import ShortCutsPanel from './components/ShortCutsPanel.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
 
 const config = useConfigStore();

@@ -38,7 +38,9 @@
     <div v-else-if="iconUrl && iconError" class="card-icon-wrap card-icon-letter-wrap">
       <span class="card-icon-letter">{{ firstLetter }}</span>
     </div>
-    <div v-else class="icon">{{ item.icon || '🔗' }}</div>
+    <div v-else class="card-icon-wrap card-icon-letter-wrap">
+      <span class="card-icon-letter">{{ firstLetter }}</span>
+    </div>
     <p>{{ item.name }}</p>
   </a>
 </template>
@@ -203,4 +205,3 @@ button.card {
   padding: 0 4px;
 }
 </style>
-

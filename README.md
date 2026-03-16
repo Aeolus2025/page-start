@@ -29,7 +29,7 @@ src/
 │   ├── ShortcutGrid.vue   # 快捷方式面板
 │   ├── SettingsPanel.vue  # 设置面板
 │   ├── settings/          # 设置内各区块
-│   ├── EnginePicker.vue / EngineIcon.vue
+│   ├── EnginePicker.vue / SearchEngineIcon.vue
 │   └── ...
 ├── composables/            # 可复用逻辑
 │   ├── useShortcutPanel.ts # 快捷面板显隐与右键逻辑

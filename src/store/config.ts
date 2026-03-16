@@ -18,7 +18,7 @@ const defaultBg = '/image.jpg';
 
 /** 配置默认值，用于初始化和恢复默认 */
 export const DEFAULT_CONFIG: ConfigState = {
-  theme: 'light',
+  theme: 'system',
   backgroundImage: '',
   timeFormat24: true,
   timeShowSeconds: false,

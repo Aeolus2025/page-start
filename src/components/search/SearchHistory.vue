@@ -127,6 +127,25 @@ defineEmits<{
 .search-history-clear .iconfont {
   font-size: 16px;
 }
+
+/* 深色模式：与搜索栏 .search-block 风格一致 */
+[data-theme="dark"] .search-history-dropdown {
+  background: linear-gradient(135deg, rgba(60, 60, 60, 0.96) 0%, rgba(45, 45, 45, 0.92) 100%);
+  border-color: rgba(248, 250, 252, 0.18);
+}
+[data-theme="dark"] .search-history-clear {
+  border-top-color: rgba(248, 250, 252, 0.15);
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .search-history-dropdown {
+    background: linear-gradient(135deg, rgba(60, 60, 60, 0.96) 0%, rgba(45, 45, 45, 0.92) 100%);
+    border-color: rgba(248, 250, 252, 0.18);
+  }
+  [data-theme="system"] .search-history-clear {
+    border-top-color: rgba(248, 250, 252, 0.15);
+  }
+}
+
 .history-drop-enter-active,
 .history-drop-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
 .history-drop-enter-from,

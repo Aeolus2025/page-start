@@ -1,5 +1,5 @@
 <template>
-  <!-- 内联模式：紧贴搜索框下方，与搜索框同宽、同风格（图二） -->
+  <!-- 内联模式：紧贴搜索框下方，与搜索框同宽、同风格 -->
   <Transition v-if="inline" name="slide-down">
     <div
       v-if="visible"
@@ -7,36 +7,36 @@
       @contextmenu.stop.prevent
     >
       <div class="picker-grid">
-          <div
-            v-for="eng in allEngines"
-            :key="eng.id"
-            class="picker-item"
-            :class="{ 'is-current': eng.id === currentEngine?.id }"
-            @click="select(eng)"
-          >
-            <i
-              class="iconfont icon-top picker-item-remove"
-              aria-label="删除"
-              @click.stop="removeEngine(eng, $event)"
-            />
-            <EngineIcon
-              :engine="eng"
-              size="medium"
-              :icon-error="pickerIconErrors.has(eng.id)"
-              @error="onPickerIconError(eng)"
-            />
-            <span class="picker-name">{{ eng.name }}</span>
-          </div>
-          <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
-            <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
-            <span class="picker-name">恢复默认</span>
-          </div>
-          <div class="picker-item picker-item-add" @click="showAddForm = true">
-            <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
-            <span class="picker-name">添加自定义</span>
-          </div>
+        <div
+          v-for="eng in allEngines"
+          :key="eng.id"
+          class="picker-item"
+          :class="{ 'is-current': eng.id === currentEngine?.id }"
+          @click="select(eng)"
+        >
+          <i
+            class="iconfont icon-top picker-item-remove"
+            aria-label="删除"
+            @click.stop="removeEngine(eng, $event)"
+          />
+          <SearchEngineIcon
+            :engine="eng"
+            size="medium"
+            :icon-error="pickerIconErrors.has(eng.id)"
+            @error="onPickerIconError(eng)"
+          />
+          <span class="picker-name">{{ eng.name }}</span>
         </div>
-      <EnginePickerAddForm
+        <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+          <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
+          <span class="picker-name">恢复默认</span>
+        </div>
+        <div class="picker-item picker-item-add" @click="showAddForm = true">
+          <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
+          <span class="picker-name">添加自定义</span>
+        </div>
+      </div>
+      <SearchEngineCustom
         :visible="showAddForm"
         @close="showAddForm = false"
         @add="onAddEngine"
@@ -54,36 +54,36 @@
       >
         <div class="engine-picker">
           <div class="picker-grid">
-              <div
-                v-for="eng in allEngines"
-                :key="eng.id"
-                class="picker-item"
-                :class="{ 'is-current': eng.id === currentEngine?.id }"
-                @click="select(eng)"
-              >
-                <i
-                  class="iconfont icon-top picker-item-remove"
-                  aria-label="删除"
-                  @click.stop="removeEngine(eng, $event)"
-                />
-                <EngineIcon
-                  :engine="eng"
-                  size="medium"
-                  :icon-error="pickerIconErrors.has(eng.id)"
-                  @error="onPickerIconError(eng)"
-                />
-                <span class="picker-name">{{ eng.name }}</span>
-              </div>
-              <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
-                <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
-                <span class="picker-name">恢复默认</span>
-              </div>
-              <div class="picker-item picker-item-add" @click="showAddForm = true">
-                <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
-                <span class="picker-name">添加自定义</span>
-              </div>
+            <div
+              v-for="eng in allEngines"
+              :key="eng.id"
+              class="picker-item"
+              :class="{ 'is-current': eng.id === currentEngine?.id }"
+              @click="select(eng)"
+            >
+              <i
+                class="iconfont icon-top picker-item-remove"
+                aria-label="删除"
+                @click.stop="removeEngine(eng, $event)"
+              />
+<SearchEngineIcon
+              :engine="eng"
+              size="medium"
+              :icon-error="pickerIconErrors.has(eng.id)"
+              @error="onPickerIconError(eng)"
+            />
+              <span class="picker-name">{{ eng.name }}</span>
             </div>
-          <EnginePickerAddForm
+            <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+              <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
+              <span class="picker-name">恢复默认</span>
+            </div>
+            <div class="picker-item picker-item-add" @click="showAddForm = true">
+              <i class="iconfont icon-jia picker-icon" aria-hidden="true"></i>
+              <span class="picker-name">添加自定义</span>
+            </div>
+          </div>
+          <SearchEngineCustom
             :visible="showAddForm"
             @close="showAddForm = false"
             @add="onAddEngine"
@@ -98,8 +98,8 @@
 import { ref, computed, watch } from 'vue';
 import { DEFAULT_ENGINES } from '@/constants/engines';
 import { getItem, setItem } from '@/utils/storage';
-import EngineIcon from './EngineIcon.vue';
-import EnginePickerAddForm from './EnginePickerAddForm.vue';
+import SearchEngineIcon from './SearchEngineIcon.vue';
+import SearchEngineCustom from './SearchEngineCustom.vue';
 import type { SearchEngine } from '@/types';
 
 const STORAGE_KEY = 'page-start-custom-engines';
@@ -222,7 +222,6 @@ function restoreDefaultEngines() {
 </script>
 
 <style scoped>
-/* 与搜索框统一的毛玻璃风格；border-box 保证与搜索框等宽 */
 .engine-picker {
   min-width: 0;
   box-sizing: border-box;
@@ -234,8 +233,6 @@ function restoreDefaultEngines() {
   padding: 16px 20px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
-
-/* 内联模式：紧贴搜索框下方，与搜索框等宽（同属 search-block max-width: 520px） */
 .engine-picker-inline {
   width: 100%;
   max-width: 520px;
@@ -244,7 +241,6 @@ function restoreDefaultEngines() {
   overflow: hidden;
   box-sizing: border-box;
 }
-
 .slide-down-enter-active,
 .slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
 .slide-down-enter-from,
@@ -257,20 +253,16 @@ function restoreDefaultEngines() {
   opacity: 1;
   transform: translateY(0);
 }
-
-/* 浮层模式（未使用 inline 时） */
 .engine-picker-overlay {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0 16px max(24px, env(safe-area-inset-bottom));
   background: rgba(0, 0, 0, 0.25);
 }
-
 .engine-picker-overlay .engine-picker {
   width: 100%; max-width: 420px;
   border-radius: 24px 24px 0 0;
 }
-
 .slide-up-enter-active,
 .slide-up-leave-active { transition: opacity 0.25s ease; }
 .slide-up-enter-active .engine-picker,
@@ -287,14 +279,12 @@ function restoreDefaultEngines() {
 .slide-up-leave-from .engine-picker {
   transform: translateY(0);
 }
-
 .picker-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   min-height: 88px;
 }
-
 .picker-item {
   position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -304,7 +294,6 @@ function restoreDefaultEngines() {
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
-
 .picker-item-remove {
   position: absolute;
   top: 6px;
@@ -318,17 +307,13 @@ function restoreDefaultEngines() {
 .picker-item-remove:hover {
   color: rgba(0, 0, 0, 0.85);
 }
-
 .picker-item:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.02); }
 .picker-item.is-current { background: rgba(255, 255, 255, 0.4); }
-
 .picker-icon { font-size: 20px; margin-bottom: 4px; }
 .picker-item :deep(.engine-icon) { margin-bottom: 4px; }
 .picker-name { font-size: 13px; color: rgba(0, 0, 0, 0.9); }
-
 .picker-item-restore,
 .picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.35); }
 .picker-item-restore .picker-icon,
 .picker-item-add .picker-icon { margin-bottom: 0; }
-
 </style>

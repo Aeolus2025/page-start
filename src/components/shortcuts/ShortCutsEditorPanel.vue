@@ -320,7 +320,6 @@ function onCancel() {
   background: rgba(67, 56, 202, 1);
 }
 
-/* 深色模式（用户选择「深色」时生效） */
 [data-theme="dark"] .add-backdrop {
   background: rgba(0, 0, 0, 0.28);
 }
@@ -332,7 +331,6 @@ function onCancel() {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
-/* 根据系统且系统为深色时 */
 @media (prefers-color-scheme: dark) {
   [data-theme="system"] .add-backdrop {
     background: rgba(0, 0, 0, 0.28);
@@ -367,4 +365,3 @@ function onCancel() {
   transform: scale(0.96);
 }
 </style>
-
