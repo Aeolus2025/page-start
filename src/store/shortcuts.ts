@@ -4,12 +4,11 @@
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
 import type { ShortcutItem } from '@/types';
-
-const STORAGE_KEY = 'shortcuts';
+import { StorageKey } from '@/types';
 
 function loadShortcuts(): ShortcutItem[] {
   try {
-    const raw = getItem(STORAGE_KEY);
+    const raw = getItem(StorageKey.Shortcuts);
     if (raw === null) return [];
     const parsed = JSON.parse(raw as string);
     if (!Array.isArray(parsed)) return [];
@@ -27,7 +26,7 @@ function loadShortcuts(): ShortcutItem[] {
 }
 
 function saveShortcuts(list: ShortcutItem[]) {
-  setItem(STORAGE_KEY, list);
+  setItem(StorageKey.Shortcuts, list);
 }
 
 function genId(): string {

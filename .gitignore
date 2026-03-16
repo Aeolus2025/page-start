@@ -30,3 +30,5 @@ docs/
 
 # tsc 产物（根配置已 noEmit，此处防止历史或误产出被提交）
 src/**/*.vue.js
+
+.cursor/

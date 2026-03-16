@@ -74,12 +74,17 @@ import { useSearchNavigate } from '@/composables/useSearchNavigate';
 import { useClickOutside } from '@/composables/useClickOutside';
 import { useConfigStore } from '@/store/config';
 
-const props = defineProps({
-  shouldFocusOnMount: { type: Boolean, default: true },
-  shortcutPanelOpen: { type: Boolean, default: false }
-});
+interface SearchBarProps {
+  shouldFocusOnMount?: boolean;
+  shortcutPanelOpen?: boolean;
+}
 
-const emit = defineEmits(['focus-change', 'picker-open']);
+const props = defineProps<SearchBarProps>();
+
+const emit = defineEmits<{
+  'focus-change': [focused: boolean];
+  'picker-open': [visible: boolean];
+}>();
 
 const query = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -158,8 +163,10 @@ watch(pickerVisible, (visible) => {
 const handleSearch = () => {
   const q = query.value.trim();
   if (!q) return;
+  const url = buildSearchUrl(q);
+  if (!url) return;
   addHistory(q, { persistOnly: !config.openSearchInNewTab });
-  navigateToSearchUrl(buildSearchUrl(q));
+  navigateToSearchUrl(url);
 };
 
 onMounted(() => {

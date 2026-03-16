@@ -52,3 +52,22 @@ export interface ShortcutItem {
   /** 展示用，如 emoji 或单字符 */
   icon: string;
 }
+
+/** localStorage 使用到的键（不含全局前缀） */
+export enum StorageKey {
+  BackgroundImage = 'backgroundImage',
+  TimeFormat24 = 'timeFormat24',
+  TimeShowSeconds = 'timeShowSeconds',
+  TimeFontSize = 'timeFontSize',
+  TimeFontWeight = 'timeFontWeight',
+  TimeFontStyle = 'timeFontStyle',
+  FocusSearchOnLoad = 'focusSearchOnLoad',
+  SearchHistoryEnabled = 'searchHistoryEnabled',
+  OpenSearchInNewTab = 'openSearchInNewTab',
+  ExportIncludeBackground = 'exportIncludeBackground',
+  HiddenEngineIds = 'hiddenEngineIds',
+  CustomEngines = 'custom-engines',
+  Shortcuts = 'shortcuts',
+  SearchHistory = 'searchHistory',
+  SelectedEngine = 'page-start-selected-engine'
+}

@@ -1,4 +1,5 @@
 import type { SearchEngine } from '@/types';
+import { StorageKey } from '@/types';
 
 /** 内置搜索引擎列表，单一数据源；带 icon 的引擎使用 iconfont 注入的 symbol（<use href="#icon-xxx">） */
 export const DEFAULT_ENGINES: SearchEngine[] = [
@@ -13,11 +14,9 @@ export const DEFAULT_ENGINES: SearchEngine[] = [
   { id: 'yahoo', name: 'Yahoo', url: 'https://search.yahoo.com/search?p=%s', icon: 'icon-yahoo-fill' }
 ];
 
-const STORAGE_KEY = 'page-start-selected-engine';
-
 export function loadSavedEngine(): SearchEngine {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(StorageKey.SelectedEngine);
     if (!raw) return DEFAULT_ENGINES[0];
     const o = JSON.parse(raw) as { id?: string; name?: string; url?: string };
     const found =
@@ -34,7 +33,7 @@ export function saveSelectedEngine(engine: SearchEngine | null | undefined): voi
   try {
     if (!engine) return;
     localStorage.setItem(
-      STORAGE_KEY,
+      StorageKey.SelectedEngine,
       JSON.stringify({ id: engine.id, name: engine.name, url: engine.url })
     );
   } catch (_) {}

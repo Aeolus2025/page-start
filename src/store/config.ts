@@ -5,6 +5,7 @@
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
 import type { ConfigState, ExportPayload } from '@/types';
+import { StorageKey } from '@/types';
 
 const defaultBg = '/background.jpg';
 
@@ -22,13 +23,13 @@ export const DEFAULT_CONFIG: ConfigState = {
   exportIncludeBackground: true
 };
 
-function readBool(key: string, defaultValue: boolean): boolean {
+function readBool(key: StorageKey, defaultValue: boolean): boolean {
   const v = getItem(key);
   if (v === null) return defaultValue;
   return v === 'true';
 }
 
-function readStr(key: string, defaultValue: string): string {
+function readStr(key: StorageKey, defaultValue: string): string {
   const v = getItem(key);
   return v !== null && v !== '' ? v : defaultValue;
 }
@@ -124,16 +125,27 @@ function persistImportedEngineData(
 export const useConfigStore = defineStore('config', {
   state(): ConfigState {
     return {
-      backgroundImage: readStr('backgroundImage', DEFAULT_CONFIG.backgroundImage),
-      timeFormat24: readBool('timeFormat24', DEFAULT_CONFIG.timeFormat24),
-      timeShowSeconds: readBool('timeShowSeconds', DEFAULT_CONFIG.timeShowSeconds),
-      timeFontSize: (readStr('timeFontSize', DEFAULT_CONFIG.timeFontSize) as ConfigState['timeFontSize']) || DEFAULT_CONFIG.timeFontSize,
-      timeFontWeight: readStr('timeFontWeight', DEFAULT_CONFIG.timeFontWeight) === 'bold' ? 'bold' : 'normal',
-      timeFontStyle: (readStr('timeFontStyle', DEFAULT_CONFIG.timeFontStyle) as ConfigState['timeFontStyle']) || DEFAULT_CONFIG.timeFontStyle,
-      focusSearchOnLoad: readBool('focusSearchOnLoad', DEFAULT_CONFIG.focusSearchOnLoad),
-      searchHistoryEnabled: readBool('searchHistoryEnabled', DEFAULT_CONFIG.searchHistoryEnabled),
-      openSearchInNewTab: readBool('openSearchInNewTab', DEFAULT_CONFIG.openSearchInNewTab),
-      exportIncludeBackground: readBool('exportIncludeBackground', DEFAULT_CONFIG.exportIncludeBackground)
+      backgroundImage: readStr(StorageKey.BackgroundImage, DEFAULT_CONFIG.backgroundImage),
+      timeFormat24: readBool(StorageKey.TimeFormat24, DEFAULT_CONFIG.timeFormat24),
+      timeShowSeconds: readBool(StorageKey.TimeShowSeconds, DEFAULT_CONFIG.timeShowSeconds),
+      timeFontSize:
+        (readStr(StorageKey.TimeFontSize, DEFAULT_CONFIG.timeFontSize) as ConfigState['timeFontSize']) ||
+        DEFAULT_CONFIG.timeFontSize,
+      timeFontWeight:
+        readStr(StorageKey.TimeFontWeight, DEFAULT_CONFIG.timeFontWeight) === 'bold' ? 'bold' : 'normal',
+      timeFontStyle:
+        (readStr(StorageKey.TimeFontStyle, DEFAULT_CONFIG.timeFontStyle) as ConfigState['timeFontStyle']) ||
+        DEFAULT_CONFIG.timeFontStyle,
+      focusSearchOnLoad: readBool(StorageKey.FocusSearchOnLoad, DEFAULT_CONFIG.focusSearchOnLoad),
+      searchHistoryEnabled: readBool(
+        StorageKey.SearchHistoryEnabled,
+        DEFAULT_CONFIG.searchHistoryEnabled
+      ),
+      openSearchInNewTab: readBool(StorageKey.OpenSearchInNewTab, DEFAULT_CONFIG.openSearchInNewTab),
+      exportIncludeBackground: readBool(
+        StorageKey.ExportIncludeBackground,
+        DEFAULT_CONFIG.exportIncludeBackground
+      )
     };
   },
   getters: {
@@ -149,49 +161,49 @@ export const useConfigStore = defineStore('config', {
   actions: {
     setBackgroundImage(url: string) {
       this.backgroundImage = url || '';
-      setItem('backgroundImage', this.backgroundImage);
+      setItem(StorageKey.BackgroundImage, this.backgroundImage);
     },
     removeBackgroundImage() {
       this.backgroundImage = '';
-      setItem('backgroundImage', '');
+      setItem(StorageKey.BackgroundImage, '');
     },
     setTimeFormat24(value: boolean) {
       this.timeFormat24 = Boolean(value);
-      setItem('timeFormat24', this.timeFormat24);
+      setItem(StorageKey.TimeFormat24, this.timeFormat24);
     },
     setTimeShowSeconds(value: boolean) {
       this.timeShowSeconds = Boolean(value);
-      setItem('timeShowSeconds', this.timeShowSeconds);
+      setItem(StorageKey.TimeShowSeconds, this.timeShowSeconds);
     },
     setTimeFontSize(value: string) {
       const v = ['small', 'medium', 'large'].includes(value) ? value : 'medium';
       this.timeFontSize = v as ConfigState['timeFontSize'];
-      setItem('timeFontSize', this.timeFontSize);
+      setItem(StorageKey.TimeFontSize, this.timeFontSize);
     },
     setTimeFontWeight(value: string) {
       this.timeFontWeight = value === 'bold' ? 'bold' : 'normal';
-      setItem('timeFontWeight', this.timeFontWeight);
+      setItem(StorageKey.TimeFontWeight, this.timeFontWeight);
     },
     setTimeFontStyle(value: string) {
       const v = ['normal', 'italic', 'script'].includes(value) ? value : 'normal';
       this.timeFontStyle = v as ConfigState['timeFontStyle'];
-      setItem('timeFontStyle', this.timeFontStyle);
+      setItem(StorageKey.TimeFontStyle, this.timeFontStyle);
     },
     setFocusSearchOnLoad(value: boolean) {
       this.focusSearchOnLoad = Boolean(value);
-      setItem('focusSearchOnLoad', this.focusSearchOnLoad);
+      setItem(StorageKey.FocusSearchOnLoad, this.focusSearchOnLoad);
     },
     setSearchHistoryEnabled(value: boolean) {
       this.searchHistoryEnabled = Boolean(value);
-      setItem('searchHistoryEnabled', this.searchHistoryEnabled);
+      setItem(StorageKey.SearchHistoryEnabled, this.searchHistoryEnabled);
     },
     setOpenSearchInNewTab(value: boolean) {
       this.openSearchInNewTab = Boolean(value);
-      setItem('openSearchInNewTab', this.openSearchInNewTab);
+      setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
     },
     setExportIncludeBackground(value: boolean) {
       this.exportIncludeBackground = Boolean(value);
-      setItem('exportIncludeBackground', this.exportIncludeBackground);
+      setItem(StorageKey.ExportIncludeBackground, this.exportIncludeBackground);
     },
     /** 恢复所有配置为默认值并持久化 */
     resetToDefaults() {
@@ -205,17 +217,17 @@ export const useConfigStore = defineStore('config', {
       this.searchHistoryEnabled = DEFAULT_CONFIG.searchHistoryEnabled;
       this.openSearchInNewTab = DEFAULT_CONFIG.openSearchInNewTab;
       this.exportIncludeBackground = DEFAULT_CONFIG.exportIncludeBackground;
-      setItem('backgroundImage', this.backgroundImage);
-      setItem('timeFormat24', this.timeFormat24);
-      setItem('timeShowSeconds', this.timeShowSeconds);
-      setItem('timeFontSize', this.timeFontSize);
-      setItem('timeFontWeight', this.timeFontWeight);
-      setItem('timeFontStyle', this.timeFontStyle);
-      setItem('focusSearchOnLoad', this.focusSearchOnLoad);
-      setItem('searchHistoryEnabled', this.searchHistoryEnabled);
-      setItem('openSearchInNewTab', this.openSearchInNewTab);
-      setItem('exportIncludeBackground', this.exportIncludeBackground);
-      setItem('hiddenEngineIds', '[]');
+      setItem(StorageKey.BackgroundImage, this.backgroundImage);
+      setItem(StorageKey.TimeFormat24, this.timeFormat24);
+      setItem(StorageKey.TimeShowSeconds, this.timeShowSeconds);
+      setItem(StorageKey.TimeFontSize, this.timeFontSize);
+      setItem(StorageKey.TimeFontWeight, this.timeFontWeight);
+      setItem(StorageKey.TimeFontStyle, this.timeFontStyle);
+      setItem(StorageKey.FocusSearchOnLoad, this.focusSearchOnLoad);
+      setItem(StorageKey.SearchHistoryEnabled, this.searchHistoryEnabled);
+      setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
+      setItem(StorageKey.ExportIncludeBackground, this.exportIncludeBackground);
+      setItem(StorageKey.HiddenEngineIds, '[]');
     },
     /** 导出配置为 JSON 对象（含 config、hiddenEngineIds、customEngines） */
     exportConfig(): ExportPayload {
@@ -224,8 +236,8 @@ export const useConfigStore = defineStore('config', {
       return {
         version: 1,
         config: configSnapshot,
-        hiddenEngineIds: parseHiddenEngineIds(getItem('hiddenEngineIds')),
-        customEngines: parseCustomEngines(getItem('custom-engines'))
+        hiddenEngineIds: parseHiddenEngineIds(getItem(StorageKey.HiddenEngineIds)),
+        customEngines: parseCustomEngines(getItem(StorageKey.CustomEngines))
       };
     },
     /** 导入配置；返回 true 表示成功，建议调用后刷新页面以使引擎等生效 */

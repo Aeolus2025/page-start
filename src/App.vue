@@ -47,7 +47,7 @@ import SettingsPanel from './components/SettingsPanel.vue';
 const config = useConfigStore();
 const { focusSearchOnLoad } = storeToRefs(config);
 
-const contentBlockRef = ref(null);
+const contentBlockRef = ref<HTMLElement | null>(null);
 const {
   showShortcutPanel,
   panelJustClosed,
