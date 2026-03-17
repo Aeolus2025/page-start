@@ -88,5 +88,5 @@ export enum StorageKey {
   CustomEngines = 'custom-engines',
   Shortcuts = 'shortcuts',
   SearchHistory = 'searchHistory',
-  SelectedEngine = 'page-start-selected-engine'
+  SelectedEngine = 'selectedEngine'
 }

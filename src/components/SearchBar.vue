@@ -13,6 +13,10 @@
           class="engine-trigger"
           @click.stop="onEngineTriggerClick"
           @mousedown.prevent
+          @keydown.enter.prevent.stop="onEngineTriggerClick"
+          @keydown.space.prevent.stop="onEngineTriggerClick"
+          role="button"
+          tabindex="0"
           :title="currentEngine?.name"
         >
           <SearchEngineIcon
@@ -42,6 +46,10 @@
             title="搜索"
             @click.stop="handleSearch"
             @mousedown.prevent
+            @keydown.enter.prevent.stop="handleSearch"
+            @keydown.space.prevent.stop="handleSearch"
+            role="button"
+            tabindex="0"
           />
         </div>
       </div>

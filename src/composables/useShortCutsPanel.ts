@@ -20,10 +20,8 @@ export function useShortCutsPanel(contentBlockRef: Ref<HTMLElement | null>) {
   function installContextMenuBlock() {
     if (contextMenuBlockCleanup) return;
     window.addEventListener('contextmenu', onContextMenuBlock, true);
-    document.addEventListener('contextmenu', onContextMenuBlock, true);
     contextMenuBlockCleanup = () => {
       window.removeEventListener('contextmenu', onContextMenuBlock, true);
-      document.removeEventListener('contextmenu', onContextMenuBlock, true);
       contextMenuBlockCleanup = null;
     };
   }

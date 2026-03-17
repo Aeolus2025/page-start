@@ -2,19 +2,23 @@
   <svg v-if="iconfontId" class="engine-icon engine-icon-svg" :class="sizeClass" aria-hidden="true">
     <use :href="`#${iconfontId}`" />
   </svg>
-  <img
-    v-else-if="iconUrl && !iconError"
-    :src="iconUrl"
-    :alt="engine?.name"
-    class="engine-icon engine-icon-img"
-    :class="sizeClass"
-    @error="$emit('error')"
-  />
-  <span v-else class="engine-icon engine-icon-fallback" :class="sizeClass">{{ fallback }}</span>
+  <span v-else class="engine-icon engine-icon-fallback" :class="sizeClass">
+    <span class="engine-icon-fallback-letter">{{ fallback }}</span>
+    <img
+      v-if="iconUrl"
+      v-show="showImg && !iconError"
+      :src="iconUrl"
+      :alt="engine?.name"
+      class="engine-icon engine-icon-img"
+      @load="handleImgLoad"
+      @error="handleImgError"
+    />
+  </span>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useProbedIconUrl } from '@/composables/useProbedIconUrl';
 import { getFaviconFromUrl, getFirstLetter } from '@/utils/getIcon';
 import type { SearchEngine } from '@/types';
 
@@ -39,19 +43,24 @@ const props = withDefaults(
   { iconError: false, size: 'small' }
 );
 
-const sizeClass = computed(() => `size-${props.size}`);
+const emit = defineEmits<{ (e: 'error'): void }>();
 
-defineEmits<{ (e: 'error'): void }>();
+const sizeClass = computed(() => `size-${props.size}`);
 
 const iconfontId = computed(() => {
   const icon = props.engine?.icon;
   return icon && isIconfontSymbol(icon) ? icon.trim() : '';
 });
 
-const iconUrl = computed(() => {
+const rawIconUrl = computed(() => {
   if (iconfontId.value || props.iconError) return '';
   return getEngineIconUrl(props.engine) || '';
 });
+
+const { iconUrl, showImg, iconError, handleImgLoad, handleImgError } = useProbedIconUrl(
+  rawIconUrl,
+  { onError: () => emit('error') }
+);
 
 const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
 </script>
@@ -76,6 +85,9 @@ const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+.engine-icon-fallback-letter {
   font-size: 14px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.82);

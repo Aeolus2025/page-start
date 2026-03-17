@@ -2,27 +2,14 @@
  * 快捷方式 Store：增删改查，持久化到 localStorage（key: shortcuts）。
  */
 import { defineStore } from 'pinia';
-import { getItem, setItem } from '@/utils/storage';
+import { genUniqueId } from '@/utils/id';
+import { getJsonArray, setItem } from '@/utils/storage';
 import type { ShortcutItem } from '@/types';
 import { StorageKey } from '@/types';
+import { isShortcutItem } from '@/types/guards';
 
 function loadShortcuts(): ShortcutItem[] {
-  try {
-    const raw = getItem(StorageKey.Shortcuts);
-    if (raw === null) return [];
-    const parsed = JSON.parse(raw as string);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (x): x is ShortcutItem =>
-        x &&
-        typeof x.id === 'string' &&
-        typeof x.name === 'string' &&
-        typeof x.url === 'string' &&
-        typeof x.icon === 'string'
-    );
-  } catch {
-    return [];
-  }
+  return getJsonArray(StorageKey.Shortcuts, isShortcutItem);
 }
 
 function saveShortcuts(list: ShortcutItem[]) {
@@ -30,7 +17,7 @@ function saveShortcuts(list: ShortcutItem[]) {
 }
 
 function genId(): string {
-  return `sc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  return genUniqueId('sc-');
 }
 
 export const useShortcutsStore = defineStore('shortcuts', {

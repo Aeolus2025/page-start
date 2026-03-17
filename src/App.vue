@@ -63,6 +63,7 @@ const {
   showShortcutPanel,
   panelJustClosed,
   openShortcutPanel,
+  closeShortcutPanel,
 } = useShortCutsPanel(contentBlockRef);
 
 const focusSearchOnMount = computed(() => focusSearchOnLoadEnabled.value && !panelJustClosed.value);
@@ -105,6 +106,22 @@ function handleContainerContextMenu(_e: MouseEvent) {
 function openSettings() {
   settingsVisible.value = true;
 }
+
+function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Escape') return;
+  if (settingsVisible.value) {
+    settingsVisible.value = false;
+    return;
+  }
+  if (showShortcutPanel.value) {
+    closeShortcutPanel();
+    updateShifted();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onGlobalKeydown);
+});
 </script>
 
 <style>
@@ -195,6 +212,10 @@ body, html, #app {
   transform: scale(1.05) translateY(-1px);
   box-shadow: none;
   border-color: var(--glass-border-strong);
+}
+.settings-fab:focus-visible {
+  outline: 2px solid var(--glass-border-strong);
+  outline-offset: 3px;
 }
 /* 快捷面板：不设 box-shadow，避免深浅色主题下四角出现直角阴影 */
 .shortcut-sheet {

@@ -9,6 +9,7 @@ import type { ConfigState, ExportPayload, ThemeMode, ShortcutItem } from '@/type
 import { StorageKey } from '@/types';
 import { useSearchEnginesStore } from './search';
 import { useShortcutsStore } from './shortcuts';
+import { isShortcutItem } from '@/types/guards';
 
 const THEME_VALUES: ThemeMode[] = ['light', 'dark', 'system'];
 function readTheme(key: StorageKey, defaultValue: ThemeMode): ThemeMode {
@@ -56,11 +57,11 @@ function applyImportedConfig(
   if (!config || typeof config !== 'object') return;
   if (THEME_VALUES.includes(config.theme as ThemeMode)) {
     store.theme = config.theme as ThemeMode;
-    setItem('theme', store.theme as string);
+    setItem(StorageKey.Theme, store.theme as string);
   }
   if (typeof config.backgroundImage === 'string') {
     store.backgroundImage = config.backgroundImage;
-    setItem('backgroundImage', config.backgroundImage);
+    setItem(StorageKey.BackgroundImage, config.backgroundImage);
   }
   if (typeof config.timeFormat24Enabled === 'boolean') {
     store.timeFormat24Enabled = config.timeFormat24Enabled;
@@ -73,15 +74,15 @@ function applyImportedConfig(
   if (['small', 'medium', 'large'].includes(config.timeFontSize as string)) {
     const val = config.timeFontSize as ConfigState['timeFontSize'];
     store.timeFontSize = val;
-    setItem('timeFontSize', val);
+    setItem(StorageKey.TimeFontSize, val);
   }
   if (config.timeFontWeight === 'bold' || config.timeFontWeight === 'normal') {
     store.timeFontWeight = config.timeFontWeight;
-    setItem('timeFontWeight', config.timeFontWeight as string);
+    setItem(StorageKey.TimeFontWeight, config.timeFontWeight as string);
   }
   if (['normal', 'italic', 'script'].includes(config.timeFontStyle as string)) {
     store.timeFontStyle = config.timeFontStyle as ConfigState['timeFontStyle'];
-    setItem('timeFontStyle', store.timeFontStyle as string);
+    setItem(StorageKey.TimeFontStyle, store.timeFontStyle as string);
   }
   if (typeof config.focusSearchOnLoadEnabled === 'boolean') {
     store.focusSearchOnLoadEnabled = config.focusSearchOnLoadEnabled;
@@ -89,11 +90,11 @@ function applyImportedConfig(
   }
   if (typeof config.searchHistoryEnabled === 'boolean') {
     store.searchHistoryEnabled = config.searchHistoryEnabled;
-    setItem('searchHistoryEnabled', config.searchHistoryEnabled);
+    setItem(StorageKey.SearchHistoryEnabled, config.searchHistoryEnabled);
   }
   if (typeof config.searchSuggestEnabled === 'boolean') {
     store.searchSuggestEnabled = config.searchSuggestEnabled;
-    setItem('searchSuggestEnabled', config.searchSuggestEnabled);
+    setItem(StorageKey.SearchSuggestEnabled, config.searchSuggestEnabled);
   }
   if (typeof config.openSearchInNewTabEnabled === 'boolean') {
     store.openSearchInNewTabEnabled = config.openSearchInNewTabEnabled;
@@ -300,15 +301,7 @@ export const useConfigStore = defineStore('config', {
         currentEngine: d.currentEngine
       });
       if (Array.isArray(d.shortcuts)) {
-        const list = d.shortcuts.filter(
-          (x): x is ShortcutItem =>
-            x &&
-            typeof x === 'object' &&
-            typeof (x as ShortcutItem).id === 'string' &&
-            typeof (x as ShortcutItem).name === 'string' &&
-            typeof (x as ShortcutItem).url === 'string' &&
-            typeof (x as ShortcutItem).icon === 'string'
-        );
+        const list = d.shortcuts.filter(isShortcutItem);
         useShortcutsStore().replaceAll(list);
       }
       return true;

@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue';
+import { ref, computed, onUnmounted, watch, type Ref } from 'vue';
 
 const CARD_WIDTH = 88;
 const GAP = 20;
@@ -20,15 +20,24 @@ export function useShortCutsGridLayout(wrapRef: Ref<HTMLElement | null>) {
 
   let resizeObs: ResizeObserver | null = null;
 
-  onMounted(() => {
-    if (!wrapRef.value) return;
-    wrapWidth.value = wrapRef.value.getBoundingClientRect().width || DEFAULT_WIDTH;
+  function attachObserver(el: HTMLElement) {
+    wrapWidth.value = el.getBoundingClientRect().width || DEFAULT_WIDTH;
     resizeObs = new ResizeObserver((entries) => {
       const w = entries[0]?.contentRect.width;
       if (w != null && w > 0) wrapWidth.value = w;
     });
-    resizeObs.observe(wrapRef.value);
-  });
+    resizeObs.observe(el);
+  }
+
+  watch(
+    wrapRef,
+    (el, prevEl) => {
+      if (prevEl && resizeObs) resizeObs.unobserve(prevEl);
+      if (!el) return;
+      if (!resizeObs) attachObserver(el);
+    },
+    { immediate: true }
+  );
 
   onUnmounted(() => {
     if (wrapRef.value && resizeObs) resizeObs.unobserve(wrapRef.value);

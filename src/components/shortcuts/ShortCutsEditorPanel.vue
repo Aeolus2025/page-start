@@ -67,6 +67,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
+import { ensureAbsoluteUrl } from '@/utils/checkUrl';
 import { getFaviconFromUrl, getFirstLetter } from '@/utils/getIcon';
 
 interface ShortcutFormValue {
@@ -120,11 +121,6 @@ watch(
   }
 );
 
-function normalizeUrl(url: string): string {
-  const href = url.trim();
-  return /^https?:\/\//i.test(href) ? href : `https://${href}`;
-}
-
 function onIconFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0] ?? null;
@@ -151,7 +147,7 @@ function handleSubmit() {
     error.value = '请填写名称和链接';
     return;
   }
-  const href = normalizeUrl(url);
+  const href = ensureAbsoluteUrl(url);
   const icon = localForm.icon.trim() || getFaviconFromUrl(href);
   const iconVal = icon || getFirstLetter(name);
   emit('submit', { name, url: href, icon: iconVal });

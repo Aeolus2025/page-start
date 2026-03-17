@@ -26,30 +26,29 @@
       </button>
     </div>
 
-    <div v-if="iconUrl && !iconError" class="card-icon-wrap">
+    <div class="card-icon-wrap card-icon-letter-wrap">
+      <span class="card-icon-letter">{{ firstLetter }}</span>
       <img
+        v-if="iconUrl"
+        v-show="showImg && !iconError"
         class="card-icon-img"
         :src="iconUrl"
         :alt="item.name"
         loading="lazy"
-        @error="iconError = true"
+        @load="handleImgLoad"
+        @error="handleImgError"
       />
-    </div>
-    <div v-else-if="iconUrl && iconError" class="card-icon-wrap card-icon-letter-wrap">
-      <span class="card-icon-letter">{{ firstLetter }}</span>
-    </div>
-    <div v-else class="card-icon-wrap card-icon-letter-wrap">
-      <span class="card-icon-letter">{{ firstLetter }}</span>
     </div>
     <p>{{ item.name }}</p>
   </a>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
+import { useProbedIconUrl } from '@/composables/useProbedIconUrl';
 import type { ShortcutItem } from '@/types';
-import { getFirstLetter } from '@/utils/getIcon';
 import { isIconUrl } from '@/utils/checkUrl';
+import { getFirstLetter } from '@/utils/getIcon';
 
 const props = defineProps<{
   item: ShortcutItem;
@@ -60,9 +59,8 @@ const emit = defineEmits<{
   (e: 'remove', id: string): void;
 }>();
 
-const iconError = ref(false);
-
-const iconUrl = computed(() => (isIconUrl(props.item.icon) ? props.item.icon : ''));
+const rawIconUrl = computed(() => (isIconUrl(props.item.icon) ? props.item.icon : ''));
+const { iconUrl, showImg, iconError, handleImgLoad, handleImgError } = useProbedIconUrl(rawIconUrl);
 const firstLetter = computed(() => getFirstLetter(props.item.name));
 </script>
 

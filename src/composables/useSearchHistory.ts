@@ -1,19 +1,12 @@
 import { ref, computed } from 'vue';
-import { getItem, setItem } from '@/utils/storage';
+import { getJsonArray, setItem } from '@/utils/storage';
 import { StorageKey } from '@/types';
 import { useConfigStore } from '@/store/settings';
 
 const MAX_ITEMS = 20;
 
 function loadHistory(): string[] {
-  try {
-    const raw = getItem(StorageKey.SearchHistory);
-    if (raw === null) return [];
-    const parsed = JSON.parse(raw as string);
-    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
+  return getJsonArray(StorageKey.SearchHistory, (x): x is string => typeof x === 'string');
 }
 
 function saveHistory(list: string[]) {

@@ -1,6 +1,21 @@
 import type { ValidateResult } from '@/types';
 
 /**
+ * 解析字符串为 URL，仅允许 http/https，否则返回 null。
+ */
+export function parseHttpUrl(input: string): URL | null {
+  const trimmed = (input || '').trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    return u;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * 校验自定义搜索引擎 URL 格式。
  * 支持：① 完整 URL（含占位符 %s 或 {query}）；② 基础路径（不含占位符，保存时会自动追加 ?q=关键词）
  */
@@ -9,14 +24,9 @@ export function validateSearchEngineUrl(url: string): ValidateResult {
   if (!trimmed) {
     return { valid: false, message: '请填写搜索 URL' };
   }
-  try {
-    const toParse = trimmed.replace(/%s|\{query\}/gi, 'x');
-    const u = new URL(toParse);
-    if (!/^https?:$/i.test(u.protocol)) {
-      return { valid: false, message: '请使用 http 或 https 协议' };
-    }
-  } catch {
-    return { valid: false, message: '请输入正确的 URL 格式' };
+  const toParse = trimmed.replace(/%s|\{query\}/gi, 'x');
+  if (!parseHttpUrl(toParse)) {
+    return { valid: false, message: '请输入正确的 URL 格式（请使用 http 或 https）' };
   }
   return { valid: true };
 }
@@ -39,6 +49,15 @@ export function normalizeSearchEngineUrl(url: string): string {
   } catch {
     return trimmed;
   }
+}
+
+/**
+ * 若 URL 无协议则补 https://，空串返回 ''。
+ */
+export function ensureAbsoluteUrl(url: string): string {
+  const trimmed = (url || '').trim();
+  if (!trimmed) return '';
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
 /** 判断是否为可当作图片 URL 使用的字符串（http/https/data） */

@@ -3,38 +3,30 @@
  * 状态持久化到 localStorage（与 config/shortcuts 同前缀 page-start-）。
  */
 import { defineStore } from 'pinia';
-import { getItem, setItem } from '@/utils/storage';
+import { getItem, getJsonArray, setItem } from '@/utils/storage';
 import { DEFAULT_ENGINES } from '@/constants/engines';
 import type { SearchEngine } from '@/types';
 import { StorageKey } from '@/types';
 
+const LEGACY_SELECTED_ENGINE_KEY = 'page-start-selected-engine';
+
 function loadHiddenIds(): string[] {
-  try {
-    const raw = getItem(StorageKey.HiddenEngineIds);
-    if (raw === null) return [];
-    const a = JSON.parse(raw as string);
-    return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
+  return getJsonArray(StorageKey.HiddenEngineIds, (x): x is string => typeof x === 'string');
 }
 
 function loadCustomEngines(): { name: string; url: string }[] {
-  try {
-    const raw = getItem(StorageKey.CustomEngines);
-    if (raw === null || raw === '') return [];
-    const a = JSON.parse(raw as string);
-    return Array.isArray(a)
-      ? a.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string')
-      : [];
-  } catch {
-    return [];
-  }
+  return getJsonArray(StorageKey.CustomEngines, (x): x is { name: string; url: string } =>
+    Boolean(x && typeof (x as { name?: unknown }).name === 'string' && typeof (x as { url?: unknown }).url === 'string')
+  );
 }
 
 function loadSelectedEngine(): SearchEngine {
   try {
-    const raw = localStorage.getItem(StorageKey.SelectedEngine);
+    let raw = getItem(StorageKey.SelectedEngine);
+    if (raw === null) {
+      raw = localStorage.getItem(LEGACY_SELECTED_ENGINE_KEY);
+      if (raw) setItem(StorageKey.SelectedEngine, raw as string);
+    }
     if (!raw) return DEFAULT_ENGINES[0];
     const o = JSON.parse(raw) as { id?: string; name?: string; url?: string };
     const found =
@@ -47,7 +39,7 @@ function loadSelectedEngine(): SearchEngine {
   }
 }
 
-export interface SearchEnginesExport {
+interface SearchEnginesExport {
   hiddenEngineIds: string[];
   customEngines: { name: string; url: string }[];
   currentEngine?: { id?: string; name?: string; url?: string };
@@ -82,14 +74,7 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
     setSelectedEngine(engine: SearchEngine | null | undefined) {
       if (!engine) return;
       this.selectedEngine = engine;
-      try {
-        localStorage.setItem(
-          StorageKey.SelectedEngine,
-          JSON.stringify({ id: engine.id, name: engine.name, url: engine.url })
-        );
-      } catch {
-        // ignore
-      }
+      setItem(StorageKey.SelectedEngine, { id: engine.id, name: engine.name, url: engine.url });
     },
     /** 仅清空隐藏列表（配置恢复默认时调用） */
     clearHiddenIds() {
@@ -139,12 +124,8 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
           url: typeof s.url === 'string' ? s.url : undefined
         };
         if (payload.id || payload.name || payload.url) {
-          try {
-            localStorage.setItem(StorageKey.SelectedEngine, JSON.stringify(payload));
-            this.selectedEngine = loadSelectedEngine();
-          } catch {
-            // ignore
-          }
+          setItem(StorageKey.SelectedEngine, payload);
+          this.selectedEngine = loadSelectedEngine();
         }
       }
     }

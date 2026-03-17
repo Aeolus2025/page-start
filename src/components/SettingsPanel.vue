@@ -2,9 +2,15 @@
   <Teleport to="body">
     <Transition name="settings-fade">
       <div v-if="visible" class="settings-backdrop" @click.self="close">
-        <div class="settings-panel">
+        <div
+          class="settings-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+          tabindex="-1"
+        >
           <div class="settings-header">
-            <h2 class="settings-title">设置</h2>
+            <h2 id="settings-title" class="settings-title">设置</h2>
             <button type="button" class="settings-close" aria-label="关闭" @click="close">×</button>
           </div>
           <div class="settings-body">

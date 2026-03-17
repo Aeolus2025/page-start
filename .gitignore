@@ -32,3 +32,13 @@ docs/
 src/**/*.vue.js
 
 .cursor/
+
+# 本地环境配置与敏感信息（不提交远程）
+.env
+.env.*
+
+# 测试与缓存产物
+coverage/
+.nyc_output/
+.turbo/
+.cache/

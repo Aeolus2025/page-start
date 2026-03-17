@@ -4,7 +4,7 @@ import { jsonp } from '@/utils/jsonp';
 import type { SearchEngine } from '@/types';
 
 /** 搜索建议联想接口配置（JSONP），仅本 composable 使用 */
-export interface SuggestConfig {
+interface SuggestConfig {
   url: string;
   paramKeyForKeyword: string;
   callbackParam: string;
