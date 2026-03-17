@@ -6,12 +6,14 @@
       :style="widthStyle"
       @mousedown.prevent
     >
-      <ul class="search-history-list" role="listbox">
+      <ul ref="listRef" class="search-history-list" role="listbox">
         <li
           v-for="(item, idx) in items"
           :key="idx"
           class="search-history-item"
           role="option"
+          :class="{ 'is-highlighted': highlightIndex === idx }"
+          :aria-selected="highlightIndex === idx"
           @mousedown="$emit('select', item)"
         >
           <span class="search-history-item-text">{{ item }}</span>
@@ -35,10 +37,14 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { ref, toRef } from 'vue';
+import { useScrollIntoViewOnHighlight } from '@/composables/useScrollIntoViewOnHighlight';
+
+const props = defineProps<{
   visible: boolean;
   items: string[];
   widthStyle: Record<string, string>;
+  highlightIndex: number;
 }>();
 
 defineEmits<{
@@ -46,6 +52,9 @@ defineEmits<{
   (e: 'remove', item: string): void;
   (e: 'clear'): void;
 }>();
+
+const listRef = ref<HTMLUListElement | null>(null);
+useScrollIntoViewOnHighlight(listRef, toRef(props, 'highlightIndex'), { enabled: toRef(props, 'visible') });
 </script>
 
 <style scoped>
@@ -86,6 +95,9 @@ defineEmits<{
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 .search-history-item:hover {
+  background: var(--color-accent-soft);
+}
+.search-history-item.is-highlighted {
   background: var(--color-accent-soft);
 }
 .search-history-item-text {

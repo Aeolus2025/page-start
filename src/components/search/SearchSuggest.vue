@@ -1,5 +1,8 @@
 <script setup lang="ts">
-defineProps<{
+import { ref, toRef } from 'vue';
+import { useScrollIntoViewOnHighlight } from '@/composables/useScrollIntoViewOnHighlight';
+
+const props = defineProps<{
   visible: boolean;
   items: string[];
   loading: boolean;
@@ -10,6 +13,10 @@ defineProps<{
 defineEmits<{
   (e: 'select', item: string): void;
 }>();
+
+const listRef = ref<HTMLUListElement | null>(null);
+
+useScrollIntoViewOnHighlight(listRef, toRef(props, 'highlightIndex'), { enabled: toRef(props, 'visible') });
 </script>
 
 <template>
@@ -25,7 +32,7 @@ defineEmits<{
       <ul v-if="loading && items.length === 0" class="search-suggest-list" role="list">
         <li class="search-suggest-item search-suggest-loading">加载中…</li>
       </ul>
-      <ul v-else class="search-suggest-list" role="listbox">
+      <ul v-else ref="listRef" class="search-suggest-list" role="listbox">
         <li
           v-for="(item, idx) in items"
           :key="idx"

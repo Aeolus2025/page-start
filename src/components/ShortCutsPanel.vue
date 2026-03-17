@@ -30,14 +30,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useShortcutsStore } from '@/store/shortcuts';
-import { useShortcutGridLayout } from '@/composables/useShortcutGridLayout';
+import { useShortCutsGridLayout } from '@/composables/useShortCutsGridLayout';
 import type { ShortcutItem } from '@/types';
 import ShortCutsCardButton from './shortcuts/ShortCutsCardButton.vue';
 import ShortCutsEditorPanel from './shortcuts/ShortCutsEditorPanel.vue';
 
 const shortcuts = useShortcutsStore();
 const wrapRef = ref<HTMLElement | null>(null);
-const { gridWrapStyle } = useShortcutGridLayout(wrapRef);
+const { gridWrapStyle } = useShortCutsGridLayout(wrapRef);
 
 const editingId = ref<string | null>(null);
 const editorVisible = ref(false);

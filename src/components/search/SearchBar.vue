@@ -49,6 +49,7 @@
         :visible="showHistoryDropdown"
         :items="historyList"
         :width-style="historyDropdownWidthStyle"
+        :highlight-index="historyHighlightIndex"
         @select="onHistorySelect"
         @remove="removeHistoryItem"
         @clear="clearHistory"
@@ -133,6 +134,21 @@ const showHistoryDropdown = computed(
     config.searchHistoryEnabled
 );
 const historyList = computed(() => searchHistory.value);
+const historyHighlightIndex = ref(-1);
+
+function historyIncHighlight() {
+  const max = historyList.value.length - 1;
+  if (max < 0) return;
+  historyHighlightIndex.value = Math.min(historyHighlightIndex.value + 1, max);
+}
+
+function historyDecHighlight() {
+  historyHighlightIndex.value = Math.max(historyHighlightIndex.value - 1, -1);
+}
+
+watch(showHistoryDropdown, (visible) => {
+  if (!visible) historyHighlightIndex.value = -1;
+});
 
 useClickOutside(blockRef, () => { pickerVisible.value = false; }, pickerVisible);
 
@@ -186,23 +202,46 @@ function onSuggestSelect(selected: string) {
 }
 
 function onInputKeydown(e: KeyboardEvent) {
-  if (!showSuggestDropdown.value || suggestions.value.length === 0) return;
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    suggestIncHighlight();
-    return;
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    suggestDecHighlight();
-    return;
-  }
-  if (e.key === 'Enter' && suggestHighlightIndex.value >= 0) {
-    const item = suggestions.value[suggestHighlightIndex.value];
-    if (item != null) {
+  if (showSuggestDropdown.value && suggestions.value.length > 0) {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      suggestSelectHandled.value = true;
-      onSuggestSelect(item);
+      suggestIncHighlight();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      suggestDecHighlight();
+      return;
+    }
+    if (e.key === 'Enter' && suggestHighlightIndex.value >= 0) {
+      const item = suggestions.value[suggestHighlightIndex.value];
+      if (item != null) {
+        e.preventDefault();
+        suggestSelectHandled.value = true;
+        onSuggestSelect(item);
+      }
+      return;
+    }
+    return;
+  }
+
+  if (showHistoryDropdown.value && historyList.value.length > 0) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      historyIncHighlight();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      historyDecHighlight();
+      return;
+    }
+    if (e.key === 'Enter' && historyHighlightIndex.value >= 0) {
+      const item = historyList.value[historyHighlightIndex.value];
+      if (item != null) {
+        e.preventDefault();
+        onHistorySelect(item);
+      }
     }
   }
 }
@@ -325,7 +364,7 @@ onMounted(() => {
 }
 .engine-trigger {
   flex-shrink: 0;
-  width: 52px;
+  width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;

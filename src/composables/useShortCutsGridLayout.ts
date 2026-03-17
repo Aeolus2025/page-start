@@ -7,7 +7,7 @@ const DEFAULT_WIDTH = 520;
 /**
  * 快捷面板网格布局：根据容器宽度计算每行列数，用于 CSS 变量 --grid-cols
  */
-export function useShortcutGridLayout(wrapRef: Ref<HTMLElement | null>) {
+export function useShortCutsGridLayout(wrapRef: Ref<HTMLElement | null>) {
   const wrapWidth = ref(DEFAULT_WIDTH);
 
   const columnsPerRow = computed(() =>
@@ -37,3 +37,4 @@ export function useShortcutGridLayout(wrapRef: Ref<HTMLElement | null>) {
 
   return { gridWrapStyle };
 }
+

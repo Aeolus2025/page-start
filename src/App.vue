@@ -38,7 +38,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useConfigStore } from '@/store/config';
-import { useShortcutPanel } from '@/composables/useShortcutPanel';
+import { useShortCutsPanel } from '@/composables/useShortCutsPanel';
 import DigitalClock from './components/DigitalClock.vue';
 import SearchBar from './components/search/SearchBar.vue';
 import ShortCutsPanel from './components/ShortCutsPanel.vue';
@@ -58,7 +58,7 @@ const {
   showShortcutPanel,
   panelJustClosed,
   openShortcutPanel,
-} = useShortcutPanel(contentBlockRef);
+} = useShortCutsPanel(contentBlockRef);
 
 const focusSearchOnMount = computed(() => focusSearchOnLoad.value && !panelJustClosed.value);
 const backgroundStyle = computed(() => ({ backgroundImage: `url(${config.backgroundUrl})` }));

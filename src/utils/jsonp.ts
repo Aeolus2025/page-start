@@ -11,12 +11,13 @@ export function jsonp<T = unknown>(
     const script = document.createElement('script');
     script.async = true;
 
+    const win = window as unknown as Record<string, unknown>;
     const cleanup = () => {
       script.remove();
-      delete (window as Record<string, unknown>)[callbackName];
+      delete win[callbackName];
     };
 
-    (window as Record<string, unknown>)[callbackName] = (data: T) => {
+    win[callbackName] = (data: T) => {
       cleanup();
       resolve(data);
     };
