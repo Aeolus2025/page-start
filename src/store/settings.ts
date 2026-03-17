@@ -5,7 +5,7 @@
  */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
-import type { ConfigState, ExportPayload, ThemeMode, ShortcutItem } from '@/types';
+import type { ConfigState, ExportPayload, ThemeMode } from '@/types';
 import { StorageKey } from '@/types';
 import { useSearchEnginesStore } from './search';
 import { useShortcutsStore } from './shortcuts';
@@ -35,7 +35,7 @@ export const DEFAULT_CONFIG: ConfigState = {
   openSearchInNewTabEnabled: false,
   exportBackgroundEnabled: true,
   exportSearchEnginesEnabled: true,
-  exportShortCutsEnabled: true
+  exportShortCutsEnabled: true,
 };
 
 function readBool(key: StorageKey, defaultValue: boolean): boolean {
@@ -52,7 +52,7 @@ function readStr(key: StorageKey, defaultValue: string): string {
 /** 将导入的 config 对象应用到 store 并持久化 */
 function applyImportedConfig(
   store: Record<string, unknown>,
-  config: Record<string, unknown> | undefined
+  config: Record<string, unknown> | undefined,
 ): void {
   if (!config || typeof config !== 'object') return;
   if (THEME_VALUES.includes(config.theme as ThemeMode)) {
@@ -119,55 +119,65 @@ export const useConfigStore = defineStore('config', {
     return {
       theme: readTheme(StorageKey.Theme, DEFAULT_CONFIG.theme),
       backgroundImage: readStr(StorageKey.BackgroundImage, DEFAULT_CONFIG.backgroundImage),
-      timeFormat24Enabled: readBool(StorageKey.TimeFormat24Enabled, DEFAULT_CONFIG.timeFormat24Enabled),
-      timeShowSecondsEnabled: readBool(StorageKey.TimeShowSecondsEnabled, DEFAULT_CONFIG.timeShowSecondsEnabled),
+      timeFormat24Enabled: readBool(
+        StorageKey.TimeFormat24Enabled,
+        DEFAULT_CONFIG.timeFormat24Enabled,
+      ),
+      timeShowSecondsEnabled: readBool(
+        StorageKey.TimeShowSecondsEnabled,
+        DEFAULT_CONFIG.timeShowSecondsEnabled,
+      ),
       timeFontSize:
-        (readStr(StorageKey.TimeFontSize, DEFAULT_CONFIG.timeFontSize) as ConfigState['timeFontSize']) ||
-        DEFAULT_CONFIG.timeFontSize,
+        (readStr(
+          StorageKey.TimeFontSize,
+          DEFAULT_CONFIG.timeFontSize,
+        ) as ConfigState['timeFontSize']) || DEFAULT_CONFIG.timeFontSize,
       timeFontWeight:
-        readStr(StorageKey.TimeFontWeight, DEFAULT_CONFIG.timeFontWeight) === 'bold' ? 'bold' : 'normal',
+        readStr(StorageKey.TimeFontWeight, DEFAULT_CONFIG.timeFontWeight) === 'bold'
+          ? 'bold'
+          : 'normal',
       timeFontStyle:
-        (readStr(StorageKey.TimeFontStyle, DEFAULT_CONFIG.timeFontStyle) as ConfigState['timeFontStyle']) ||
-        DEFAULT_CONFIG.timeFontStyle,
+        (readStr(
+          StorageKey.TimeFontStyle,
+          DEFAULT_CONFIG.timeFontStyle,
+        ) as ConfigState['timeFontStyle']) || DEFAULT_CONFIG.timeFontStyle,
       focusSearchOnLoadEnabled: readBool(
         StorageKey.FocusSearchOnLoadEnabled,
-        DEFAULT_CONFIG.focusSearchOnLoadEnabled
+        DEFAULT_CONFIG.focusSearchOnLoadEnabled,
       ),
       searchHistoryEnabled: readBool(
         StorageKey.SearchHistoryEnabled,
-        DEFAULT_CONFIG.searchHistoryEnabled
+        DEFAULT_CONFIG.searchHistoryEnabled,
       ),
       searchSuggestEnabled: readBool(
         StorageKey.SearchSuggestEnabled,
-        DEFAULT_CONFIG.searchSuggestEnabled
+        DEFAULT_CONFIG.searchSuggestEnabled,
       ),
       openSearchInNewTabEnabled: readBool(
         StorageKey.OpenSearchInNewTabEnabled,
-        DEFAULT_CONFIG.openSearchInNewTabEnabled
+        DEFAULT_CONFIG.openSearchInNewTabEnabled,
       ),
       exportBackgroundEnabled: readBool(
         StorageKey.ExportBackgroundEnabled,
-        DEFAULT_CONFIG.exportBackgroundEnabled
+        DEFAULT_CONFIG.exportBackgroundEnabled,
       ),
       exportSearchEnginesEnabled: readBool(
         StorageKey.ExportSearchEnginesEnabled,
-        DEFAULT_CONFIG.exportSearchEnginesEnabled
+        DEFAULT_CONFIG.exportSearchEnginesEnabled,
       ),
       exportShortCutsEnabled: readBool(
         StorageKey.ExportShortCutsEnabled,
-        DEFAULT_CONFIG.exportShortCutsEnabled
-      )
+        DEFAULT_CONFIG.exportShortCutsEnabled,
+      ),
     };
   },
   getters: {
     backgroundUrl(state): string {
-      return state.backgroundImage?.trim() !== ''
-        ? state.backgroundImage.trim()
-        : defaultBg;
+      return state.backgroundImage?.trim() !== '' ? state.backgroundImage.trim() : defaultBg;
     },
     hasCustomBackground(state): boolean {
       return Boolean(state.backgroundImage?.trim());
-    }
+    },
   },
   actions: {
     setTheme(value: ThemeMode) {
@@ -273,7 +283,7 @@ export const useConfigStore = defineStore('config', {
         version: 1,
         config: configSnapshot,
         hiddenEngineIds: [],
-        customEngines: []
+        customEngines: [],
       };
       if (this.exportSearchEnginesEnabled) {
         const engineData = useSearchEnginesStore().getExportData();
@@ -293,19 +303,18 @@ export const useConfigStore = defineStore('config', {
       if (d.version !== 1) return false;
       applyImportedConfig(
         this as unknown as Record<string, unknown>,
-        d.config as Record<string, unknown> | undefined
+        d.config as Record<string, unknown> | undefined,
       );
       useSearchEnginesStore().applyImport({
         hiddenEngineIds: d.hiddenEngineIds,
         customEngines: d.customEngines,
-        currentEngine: d.currentEngine
+        currentEngine: d.currentEngine,
       });
       if (Array.isArray(d.shortcuts)) {
         const list = d.shortcuts.filter(isShortcutItem);
         useShortcutsStore().replaceAll(list);
       }
       return true;
-    }
-  }
+    },
+  },
 });
-

@@ -1,16 +1,12 @@
 import js from '@eslint/js';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
 import vue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
-const tsconfigRootDir = path.dirname(fileURLToPath(import.meta.url));
-
 export default [
   {
-    ignores: ['dist/**', 'dist-node/**', 'node_modules/**'],
+    ignores: ['dist/**', 'dist-node/**', 'node_modules/**', 'src/assets/js/iconfont.js'],
   },
 
   js.configs.recommended,
@@ -27,8 +23,21 @@ export default [
       parserOptions: {
         parser: tseslint.parser,
         extraFileExtensions: ['.vue'],
-        project: ['./tsconfig.json', './tsconfig.node.json'],
-        tsconfigRootDir,
+      },
+      globals: {
+        // Browser runtime globals
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestAnimationFrame: 'readonly',
+        createImageBitmap: 'readonly',
+        FileReader: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly',
       },
     },
   },
@@ -38,8 +47,14 @@ export default [
 
   {
     rules: {
-      // Vue: allow multi-word? keep default; but enforce stable component naming patterns
       'vue/multi-word-component-names': 'off',
+      // TS 接管未定义检查
+      'no-undef': 'off',
+      // 允许以下划线开头的未使用变量（如 _event、_engineId）
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
 ];

@@ -72,7 +72,9 @@ function onImportFile(e: Event) {
       if (config.importConfig(data)) {
         window.location.reload();
       }
-    } catch (_) {}
+    } catch (error) {
+      console.error('[ImportConfig] Failed to parse or apply config:', error);
+    }
     input.value = '';
   };
   reader.readAsText(file, 'UTF-8');
@@ -104,7 +106,9 @@ function exportConfig() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  } catch (_) {}
+  } catch (error) {
+    console.error('[ExportConfig] Failed to export config:', error);
+  }
 }
 </script>
 
@@ -192,7 +196,9 @@ function exportConfig() {
   font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg-strong);
   color: var(--glass-text);

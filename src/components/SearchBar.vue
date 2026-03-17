@@ -4,20 +4,20 @@
       <div
         ref="wrapperRef"
         class="search-wrapper"
-        :class="{ 'focused': isFocused || pickerVisible }"
+        :class="{ focused: isFocused || pickerVisible }"
         @contextmenu.stop
         @click="onWrapperClick"
       >
         <div
           v-show="isFocused || pickerVisible"
           class="engine-trigger"
+          role="button"
+          tabindex="0"
+          :title="currentEngine?.name"
           @click.stop="onEngineTriggerClick"
           @mousedown.prevent
           @keydown.enter.prevent.stop="onEngineTriggerClick"
           @keydown.space.prevent.stop="onEngineTriggerClick"
-          role="button"
-          tabindex="0"
-          :title="currentEngine?.name"
         >
           <SearchEngineIcon
             :engine="currentEngine"
@@ -32,8 +32,8 @@
             v-model="query"
             type="text"
             class="search-input"
-            :class="{ 'single': !isFocused && !pickerVisible }"
-            :placeholder="(isFocused || pickerVisible) ? '输入以搜索...' : '搜索'"
+            :class="{ single: !isFocused && !pickerVisible }"
+            :placeholder="isFocused || pickerVisible ? '输入以搜索...' : '搜索'"
             @focus="handleFocus"
             @blur="handleBlur"
             @keydown="onInputKeydown"
@@ -42,14 +42,14 @@
           <i
             v-show="isFocused || pickerVisible"
             class="iconfont icon-sousuo search-icon"
+            role="button"
+            tabindex="0"
             aria-label="搜索"
             title="搜索"
             @click.stop="handleSearch"
             @mousedown.prevent
             @keydown.enter.prevent.stop="handleSearch"
             @keydown.space.prevent.stop="handleSearch"
-            role="button"
-            tabindex="0"
           />
         </div>
       </div>
@@ -118,28 +118,34 @@ const { isFocused, handleFocus, handleBlur } = useSearchFocus((focused) => {
   emit('focus-change', focused);
 });
 const { buildSearchUrl, navigateToSearchUrl } = useSearchNavigate(currentEngine);
-const { history: searchHistory, addHistory, clearHistory, removeItem: removeHistoryItem, refresh: refreshHistory } = useSearchHistory();
+const {
+  history: searchHistory,
+  addHistory,
+  clearHistory,
+  removeItem: removeHistoryItem,
+  refresh: refreshHistory,
+} = useSearchHistory();
 const searchSuggestEnabledRef = computed(() => config.searchSuggestEnabled);
 const {
   suggestions,
   loading: suggestLoading,
   highlightIndex: suggestHighlightIndex,
   incHighlight: suggestIncHighlight,
-  decHighlight: suggestDecHighlight
+  decHighlight: suggestDecHighlight,
 } = useSearchSuggest(query, currentEngine, searchSuggestEnabledRef);
 const showSuggestDropdown = computed(
   () =>
     isFocused.value &&
     !pickerVisible.value &&
     query.value.trim() !== '' &&
-    config.searchSuggestEnabled
+    config.searchSuggestEnabled,
 );
 const showHistoryDropdown = computed(
   () =>
     isFocused.value &&
     !pickerVisible.value &&
     query.value.trim() === '' &&
-    config.searchHistoryEnabled
+    config.searchHistoryEnabled,
 );
 const historyList = computed(() => searchHistory.value);
 const historyHighlightIndex = ref(-1);
@@ -158,7 +164,13 @@ watch(showHistoryDropdown, (visible) => {
   if (!visible) historyHighlightIndex.value = -1;
 });
 
-useClickOutside(blockRef, () => { pickerVisible.value = false; }, pickerVisible);
+useClickOutside(
+  blockRef,
+  () => {
+    pickerVisible.value = false;
+  },
+  pickerVisible,
+);
 
 const historyDropdownWidthStyle = ref<Record<string, string>>({});
 function syncHistoryWidth() {
@@ -167,14 +179,18 @@ function syncHistoryWidth() {
   historyDropdownWidthStyle.value = w > 0 ? { width: `${Math.round(w)}px` } : {};
 }
 const showAnyDropdown = computed(() => showHistoryDropdown.value || showSuggestDropdown.value);
-watch([showAnyDropdown, wrapperRef], () => {
-  if (showAnyDropdown.value) {
-    if (showHistoryDropdown.value) refreshHistory();
-    nextTick(syncHistoryWidth);
-  } else {
-    historyDropdownWidthStyle.value = {};
-  }
-}, { immediate: true });
+watch(
+  [showAnyDropdown, wrapperRef],
+  () => {
+    if (showAnyDropdown.value) {
+      if (showHistoryDropdown.value) refreshHistory();
+      nextTick(syncHistoryWidth);
+    } else {
+      historyDropdownWidthStyle.value = {};
+    }
+  },
+  { immediate: true },
+);
 watch(showAnyDropdown, (visible) => {
   if (visible) {
     nextTick(() => {
@@ -267,7 +283,9 @@ const onEngineTriggerClick = () => {
 
 const engineIconError = ref(false);
 const suggestSelectHandled = ref(false);
-watch(currentEngine, () => { engineIconError.value = false; });
+watch(currentEngine, () => {
+  engineIconError.value = false;
+});
 
 const focusSearchInput = () => {
   nextTick(() => inputRef.value?.focus());
@@ -350,7 +368,9 @@ onMounted(() => {
 .search-input::placeholder {
   color: var(--color-input-placeholder);
 }
-.search-input.single { text-align: center; }
+.search-input.single {
+  text-align: center;
+}
 .search-icon {
   flex-shrink: 0;
   width: 44px;
@@ -363,7 +383,9 @@ onMounted(() => {
   cursor: pointer;
   font-size: 18px;
   color: var(--color-icon-muted);
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
   box-sizing: border-box;
 }
 .search-icon:hover {
@@ -387,7 +409,10 @@ onMounted(() => {
 .engine-trigger:hover {
   color: var(--color-accent);
 }
-.engine-chevron { font-size: 10px; opacity: 0.8; }
+.engine-chevron {
+  font-size: 10px;
+  opacity: 0.8;
+}
 .search-block {
   display: flex;
   flex-direction: column;
@@ -403,7 +428,7 @@ onMounted(() => {
   --sb-border-hover: rgba(255, 252, 240, 0.95);
   --sb-shadow-hover: none;
 }
-[data-theme="dark"] .search-block {
+[data-theme='dark'] .search-block {
   --sb-bg-idle: rgba(60, 60, 60, 0.35);
   --sb-border-idle: rgba(248, 250, 252, 0.18);
   --sb-bg-hover: rgba(60, 60, 60, 0.58);
@@ -411,7 +436,7 @@ onMounted(() => {
   --sb-shadow-hover: none;
 }
 @media (prefers-color-scheme: dark) {
-  [data-theme="system"] .search-block {
+  [data-theme='system'] .search-block {
     --sb-bg-idle: rgba(60, 60, 60, 0.35);
     --sb-border-idle: rgba(248, 250, 252, 0.18);
     --sb-bg-hover: rgba(60, 60, 60, 0.58);

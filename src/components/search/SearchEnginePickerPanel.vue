@@ -1,11 +1,7 @@
 <template>
   <!-- 内联模式：紧贴搜索框下方，与搜索框同宽、同风格 -->
   <Transition v-if="inline" name="slide-down">
-    <div
-      v-if="visible"
-      class="engine-picker engine-picker-inline"
-      @contextmenu.stop.prevent
-    >
+    <div v-if="visible" class="engine-picker engine-picker-inline" @contextmenu.stop.prevent>
       <div class="picker-grid">
         <div
           v-for="eng in allEngines"
@@ -27,7 +23,11 @@
           />
           <span class="picker-name">{{ eng.name }}</span>
         </div>
-        <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+        <div
+          class="picker-item picker-item-restore"
+          title="恢复默认搜索引擎"
+          @click="restoreDefaultEngines"
+        >
           <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
           <span class="picker-name">恢复默认</span>
         </div>
@@ -36,22 +36,14 @@
           <span class="picker-name">添加自定义</span>
         </div>
       </div>
-      <SearchEngineCustom
-        :visible="showAddForm"
-        @close="showAddForm = false"
-        @add="onAddEngine"
-      />
+      <SearchEngineCustom :visible="showAddForm" @close="showAddForm = false" @add="onAddEngine" />
     </div>
   </Transition>
 
   <!-- 浮层模式：底部滑出（保留兼容） -->
   <Teleport v-else to="body">
     <Transition name="slide-up">
-      <div
-        v-if="visible"
-        class="engine-picker-overlay"
-        @click.self="close"
-      >
+      <div v-if="visible" class="engine-picker-overlay" @click.self="close">
         <div class="engine-picker">
           <div class="picker-grid">
             <div
@@ -66,15 +58,19 @@
                 aria-label="删除"
                 @click.stop="removeEngine(eng, $event)"
               />
-<SearchEngineIcon
-              :engine="eng"
-              size="medium"
-              :icon-error="pickerIconErrors.has(eng.id)"
-              @error="onPickerIconError(eng)"
-            />
+              <SearchEngineIcon
+                :engine="eng"
+                size="medium"
+                :icon-error="pickerIconErrors.has(eng.id)"
+                @error="onPickerIconError(eng)"
+              />
               <span class="picker-name">{{ eng.name }}</span>
             </div>
-            <div class="picker-item picker-item-restore" @click="restoreDefaultEngines" title="恢复默认搜索引擎">
+            <div
+              class="picker-item picker-item-restore"
+              title="恢复默认搜索引擎"
+              @click="restoreDefaultEngines"
+            >
               <i class="iconfont icon-huifu picker-icon" aria-hidden="true"></i>
               <span class="picker-name">恢复默认</span>
             </div>
@@ -118,7 +114,7 @@ const props = withDefaults(
     visible?: boolean;
     inline?: boolean;
   }>(),
-  { modelValue: null, visible: false, inline: false }
+  { modelValue: null, visible: false, inline: false },
 );
 
 const emit = defineEmits<{
@@ -129,14 +125,18 @@ const emit = defineEmits<{
 
 const allEngines = computed(() => [
   ...DEFAULT_ENGINES.filter((e) => !hiddenEngineIds.value.includes(e.id)),
-  ...customEngines.value.map((e, i) => ({ ...e, id: 'custom-' + i }))
+  ...customEngines.value.map((e, i) => ({ ...e, id: 'custom-' + i })),
 ]);
 const currentEngine = computed(() => props.modelValue);
 const showAddForm = ref(false);
 
-watch(allEngines, (engs) => {
-  if (engs.length === 0) showAddForm.value = false;
-}, { deep: true });
+watch(
+  allEngines,
+  (engs) => {
+    if (engs.length === 0) showAddForm.value = false;
+  },
+  { deep: true },
+);
 
 const close = () => {
   showAddForm.value = false;
@@ -179,7 +179,7 @@ function restoreDefaultEngines() {
 .engine-picker {
   min-width: 0;
   box-sizing: border-box;
-  background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.18) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.18) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -196,7 +196,11 @@ function restoreDefaultEngines() {
   box-sizing: border-box;
 }
 .slide-down-enter-active,
-.slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
+.slide-down-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s ease;
+}
 .slide-down-enter-from,
 .slide-down-leave-to {
   opacity: 0;
@@ -208,23 +212,32 @@ function restoreDefaultEngines() {
   transform: translateY(0);
 }
 .engine-picker-overlay {
-  position: fixed; inset: 0; z-index: 1000;
-  display: flex; align-items: flex-end; justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   padding: 0 16px max(24px, env(safe-area-inset-bottom));
   background: rgba(0, 0, 0, 0.25);
 }
 .engine-picker-overlay .engine-picker {
-  width: 100%; max-width: 420px;
+  width: 100%;
+  max-width: 420px;
   border-radius: 24px 24px 0 0;
 }
 .slide-up-enter-active,
-.slide-up-leave-active { transition: opacity 0.25s ease; }
+.slide-up-leave-active {
+  transition: opacity 0.25s ease;
+}
 .slide-up-enter-active .engine-picker,
 .slide-up-leave-active .engine-picker {
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .slide-up-enter-from,
-.slide-up-leave-to { opacity: 0; }
+.slide-up-leave-to {
+  opacity: 0;
+}
 .slide-up-enter-from .engine-picker,
 .slide-up-leave-to .engine-picker {
   transform: translateY(100%);
@@ -241,12 +254,17 @@ function restoreDefaultEngines() {
 }
 .picker-item {
   position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 14px 10px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 .picker-item-remove {
   position: absolute;
@@ -261,13 +279,30 @@ function restoreDefaultEngines() {
 .picker-item-remove:hover {
   color: rgba(0, 0, 0, 0.85);
 }
-.picker-item:hover { background: rgba(255, 255, 255, 0.35); transform: scale(1.02); }
-.picker-item.is-current { background: rgba(255, 255, 255, 0.4); }
-.picker-icon { font-size: 20px; margin-bottom: 4px; }
-.picker-item :deep(.engine-icon) { margin-bottom: 4px; }
-.picker-name { font-size: 13px; color: rgba(0, 0, 0, 0.9); }
+.picker-item:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.02);
+}
+.picker-item.is-current {
+  background: rgba(255, 255, 255, 0.4);
+}
+.picker-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.picker-item :deep(.engine-icon) {
+  margin-bottom: 4px;
+}
+.picker-name {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.9);
+}
 .picker-item-restore,
-.picker-item-add { border: 1px dashed rgba(0, 0, 0, 0.35); }
+.picker-item-add {
+  border: 1px dashed rgba(0, 0, 0, 0.35);
+}
 .picker-item-restore .picker-icon,
-.picker-item-add .picker-icon { margin-bottom: 0; }
+.picker-item-add .picker-icon {
+  margin-bottom: 0;
+}
 </style>

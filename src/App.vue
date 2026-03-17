@@ -1,13 +1,17 @@
 <template>
-  <div class="container" @contextmenu.prevent="handleContainerContextMenu">
-    <div class="background-layer" :class="{ 'is-blur': searchFocused || showShortcutPanel }" :style="backgroundStyle"></div>
+  <div ref="contentBlockRef" class="container" @contextmenu.prevent="handleContainerContextMenu">
+    <div
+      class="background-layer"
+      :class="{ 'is-blur': searchFocused || showShortcutPanel }"
+      :style="backgroundStyle"
+    ></div>
 
-    <div class="content-layer" :class="{ 'shifted': contentShifted }">
+    <div class="content-layer" :class="{ shifted: contentShifted }">
       <div class="clock-column">
         <DigitalClock />
       </div>
       <div class="search-gap" aria-hidden="true"></div>
-      <div class="content-block" ref="contentBlockRef">
+      <div ref="contentBlockRef" class="content-block">
         <SearchBar
           v-if="!showShortcutPanel"
           :should-focus-on-mount="focusSearchOnMount"
@@ -29,7 +33,9 @@
     </div>
 
     <Transition name="fade">
-      <div v-if="showShortcutPanel" class="settings-fab" @click="openSettings" title="设置"><i class="iconfont icon-shezhi"></i></div>
+      <div v-if="showShortcutPanel" class="settings-fab" title="设置" @click="openSettings">
+        <i class="iconfont icon-shezhi"></i>
+      </div>
     </Transition>
     <SettingsPanel :visible="settingsVisible" @close="settingsVisible = false" />
   </div>
@@ -59,12 +65,8 @@ onMounted(() => applyTheme(theme.value));
 watch(theme, (mode) => applyTheme(mode));
 
 const contentBlockRef = ref<HTMLElement | null>(null);
-const {
-  showShortcutPanel,
-  panelJustClosed,
-  openShortcutPanel,
-  closeShortcutPanel,
-} = useShortCutsPanel(contentBlockRef);
+const { showShortcutPanel, panelJustClosed, openShortcutPanel, closeShortcutPanel } =
+  useShortCutsPanel(contentBlockRef);
 
 const focusSearchOnMount = computed(() => focusSearchOnLoadEnabled.value && !panelJustClosed.value);
 const backgroundStyle = computed(() => ({ backgroundImage: `url(${config.backgroundUrl})` }));
@@ -125,7 +127,9 @@ onMounted(() => {
 </script>
 
 <style>
-body, html, #app {
+body,
+html,
+#app {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -138,13 +142,20 @@ body, html, #app {
   width: 100%;
 }
 .background-layer {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   filter: brightness(var(--bg-layer-brightness));
   background-color: rgba(0, 0, 0, 1);
-  transition: filter var(--transition-normal), transform var(--transition-normal), opacity var(--transition-normal);
+  transition:
+    filter var(--transition-normal),
+    transform var(--transition-normal),
+    opacity var(--transition-normal);
   z-index: 1;
 }
 .background-layer.is-blur {
@@ -161,7 +172,9 @@ body, html, #app {
   z-index: 2;
   transition: padding-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.content-layer.shifted { padding-top: 18vh; }
+.content-layer.shifted {
+  padding-top: 18vh;
+}
 /* 恢复搜索框到原始位置（以默认/中等时钟 4rem 为准）；固定高度+时钟居中，仅时钟位移、搜索框不动 */
 .clock-column {
   display: flex;
@@ -175,7 +188,10 @@ body, html, #app {
   box-sizing: border-box;
   overflow: visible;
 }
-.content-layer .search-gap { height: 1.5rem; flex-shrink: 0; }
+.content-layer .search-gap {
+  height: 1.5rem;
+  flex-shrink: 0;
+}
 .content-block {
   display: flex;
   flex-direction: column;
@@ -194,9 +210,16 @@ body, html, #app {
   outline: none;
 }
 .settings-fab {
-  position: fixed; top: 16px; right: 16px; z-index: 5;
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -204,7 +227,10 @@ body, html, #app {
   color: var(--glass-icon);
   font-size: 20px;
   cursor: pointer;
-  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
   box-shadow: none;
 }
 .settings-fab:hover {
@@ -249,17 +275,33 @@ body, html, #app {
   box-shadow: none !important;
 }
 .slide-down-enter-active,
-.slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
+.slide-down-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.25s ease;
+}
 .slide-down-enter-from,
-.slide-down-leave-to { opacity: 0; transform: translateY(-8px); }
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
 .slide-down-enter-to,
-.slide-down-leave-from { opacity: 1; transform: translateY(0); }
+.slide-down-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
 .fade-enter-active,
-.fade-leave-active { transition: opacity 0.2s ease; }
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
 .fade-enter-from,
-.fade-leave-to { opacity: 0; }
+.fade-leave-to {
+  opacity: 0;
+}
 .fade-enter-to,
-.fade-leave-from { opacity: 1; }
+.fade-leave-from {
+  opacity: 1;
+}
 
 @media (max-width: 640px) {
   .content-layer {

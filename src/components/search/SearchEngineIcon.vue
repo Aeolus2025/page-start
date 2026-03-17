@@ -6,7 +6,7 @@
     <span class="engine-icon-fallback-letter">{{ fallback }}</span>
     <img
       v-if="iconUrl"
-      v-show="showImg && !iconError"
+      v-show="showImg && !probedIconError"
       :src="iconUrl"
       :alt="engine?.name"
       class="engine-icon engine-icon-img"
@@ -40,7 +40,7 @@ const props = withDefaults(
     /** 小号用于搜索栏触发区，中号用于选择器列表 */
     size?: 'small' | 'medium';
   }>(),
-  { iconError: false, size: 'small' }
+  { iconError: false, size: 'small' },
 );
 
 const emit = defineEmits<{ (e: 'error'): void }>();
@@ -57,10 +57,13 @@ const rawIconUrl = computed(() => {
   return getEngineIconUrl(props.engine) || '';
 });
 
-const { iconUrl, showImg, iconError, handleImgLoad, handleImgError } = useProbedIconUrl(
-  rawIconUrl,
-  { onError: () => emit('error') }
-);
+const {
+  iconUrl,
+  showImg,
+  iconError: probedIconError,
+  handleImgLoad,
+  handleImgError,
+} = useProbedIconUrl(rawIconUrl, { onError: () => emit('error') });
 
 const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
 </script>
@@ -92,6 +95,11 @@ const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
   font-weight: 600;
   color: rgba(0, 0, 0, 0.82);
 }
-.size-medium.engine-icon { width: 28px; height: 28px; }
-.size-medium.engine-icon-fallback { font-size: 18px; }
+.size-medium.engine-icon {
+  width: 28px;
+  height: 28px;
+}
+.size-medium.engine-icon-fallback {
+  font-size: 18px;
+}
 </style>

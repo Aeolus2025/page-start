@@ -18,7 +18,7 @@
 
     <ShortCutsEditorPanel
       v-if="editorVisible"
-      v-model:modelValue="editorForm"
+      v-model:model-value="editorForm"
       v-model:visible="editorVisible"
       :is-edit="Boolean(editingId)"
       @submit="handleEditorSubmit"
