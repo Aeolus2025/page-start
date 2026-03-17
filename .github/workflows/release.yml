@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Sync version from tag
+        run: npm run sync:version-from-tag
+
+      - name: CI
+        run: npm run ci
+
+      - name: Package dist.zip
+        run: npm run pack:zip
+
+      - name: Package experimental CRX
+        run: npm run pack:crx
+
+      - name: Release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/*
