@@ -1,5 +1,5 @@
 <template>
-  <div ref="contentBlockRef" class="container" @contextmenu.prevent="handleContainerContextMenu">
+  <div class="container" @contextmenu.prevent="handleContainerContextMenu">
     <div
       class="background-layer"
       :class="{ 'is-blur': searchFocused || showShortcutPanel }"
