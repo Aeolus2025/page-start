@@ -13,25 +13,18 @@ const distDir = path.join(rootDir, 'dist');
 const outDir = path.join(rootDir, 'release-assets');
 await fs.mkdir(outDir, { recursive: true });
 
-// Ensure dist exists
-await fs.access(distDir);
+// Ensure dist & manifest exist
+const manifestPath = path.join(distDir, 'manifest.json');
+await fs.access(manifestPath);
 
-// Experimental: generate a temporary key each run (NOT stable for upgrades)
+// Experimental: generate / reuse a temporary key each run (NOT stable for upgrades)
 const keyPath = path.join(outDir, `experimental-${safeTag}.pem`);
 const crxPath = path.join(outDir, `page-start-${safeTag}-experimental.crx`);
 
-const crx = crx3({
-  rootDirectory: distDir,
-  privateKey: keyPath,
+await crx3([manifestPath], {
+  keyPath,
+  crxPath,
 });
-
-// This will create a key if missing and then pack.
-await crx.loadContents();
-const buffer = await crx.pack();
-await fs.writeFile(crxPath, buffer);
-
-// Update manifest inside CRX package
-await crx.update();
 
 console.log(`[pack-crx] ${path.basename(crxPath)}`);
 
