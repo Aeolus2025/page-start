@@ -32,9 +32,6 @@ jobs:
       - name: Package dist.zip
         run: npm run pack:zip
 
-      - name: Package experimental CRX
-        run: npm run pack:crx
-
       - name: Release assets
         uses: softprops/action-gh-release@v2
         with:

@@ -18,7 +18,7 @@ function readTheme(key: StorageKey, defaultValue: ThemeMode): ThemeMode {
   return THEME_VALUES.includes(v as ThemeMode) ? (v as ThemeMode) : defaultValue;
 }
 
-const defaultBg = '/image.jpg';
+const defaultBg = '/background.jpg';
 
 /** 配置默认值，用于初始化和恢复默认 */
 export const DEFAULT_CONFIG: ConfigState = {
