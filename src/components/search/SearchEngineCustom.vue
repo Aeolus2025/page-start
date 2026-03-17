@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { validateSearchEngineUrl, normalizeSearchEngineUrl } from '@/utils/engine';
+import { validateSearchEngineUrl, normalizeSearchEngineUrl } from '@/utils/checkUrl';
 
 const props = withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });
 

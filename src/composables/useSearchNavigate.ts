@@ -1,5 +1,5 @@
 import { type Ref } from 'vue';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 import type { SearchEngine } from '@/types';
 
 /**

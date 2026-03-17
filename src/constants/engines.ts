@@ -1,5 +1,4 @@
 import type { SearchEngine } from '@/types';
-import { StorageKey } from '@/types';
 
 /** 内置搜索引擎列表，单一数据源；带 icon 的引擎使用 iconfont 注入的 symbol（<use href="#icon-xxx">） */
 export const DEFAULT_ENGINES: SearchEngine[] = [
@@ -13,28 +12,3 @@ export const DEFAULT_ENGINES: SearchEngine[] = [
   { id: 'so360', name: '360', url: 'https://www.so.com/s?q=%s', icon: 'icon-weibiaoti-3' },
   { id: 'yahoo', name: 'Yahoo', url: 'https://search.yahoo.com/search?p=%s', icon: 'icon-yahoo-fill' }
 ];
-
-export function loadSavedEngine(): SearchEngine {
-  try {
-    const raw = localStorage.getItem(StorageKey.SelectedEngine);
-    if (!raw) return DEFAULT_ENGINES[0];
-    const o = JSON.parse(raw) as { id?: string; name?: string; url?: string };
-    const found =
-      DEFAULT_ENGINES.find((e) => e.id === o?.id) || DEFAULT_ENGINES.find((e) => e.name === o?.name);
-    if (found) return found;
-    if (o?.name && o?.url) return { id: 'custom', name: o.name, url: o.url };
-    return DEFAULT_ENGINES[0];
-  } catch {
-    return DEFAULT_ENGINES[0];
-  }
-}
-
-export function saveSelectedEngine(engine: SearchEngine | null | undefined): void {
-  try {
-    if (!engine) return;
-    localStorage.setItem(
-      StorageKey.SelectedEngine,
-      JSON.stringify({ id: engine.id, name: engine.name, url: engine.url })
-    );
-  } catch (_) {}
-}

@@ -1,11 +1,14 @@
 /**
- * 全局配置 Store：外观、时钟、搜索、导入导出等。
+ * 全局配置 Store：外观、时钟、搜索开关、导入导出入口等。
  * 状态持久化到 localStorage（前缀 page-start-）。
+ * 搜索引擎/快捷方式数据由 searchEngines、shortcuts 两个 store 负责。
  */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
 import type { ConfigState, ExportPayload, ThemeMode, ShortcutItem } from '@/types';
 import { StorageKey } from '@/types';
+import { useSearchEnginesStore } from './search';
+import { useShortcutsStore } from './shortcuts';
 
 const THEME_VALUES: ThemeMode[] = ['light', 'dark', 'system'];
 function readTheme(key: StorageKey, defaultValue: ThemeMode): ThemeMode {
@@ -43,62 +46,6 @@ function readBool(key: StorageKey, defaultValue: boolean): boolean {
 function readStr(key: StorageKey, defaultValue: string): string {
   const v = getItem(key);
   return v !== null && v !== '' ? v : defaultValue;
-}
-
-/** 从 localStorage 原始字符串解析隐藏引擎 ID 列表 */
-function parseHiddenEngineIds(raw: string | null): string[] {
-  try {
-    const a = raw == null ? [] : JSON.parse(raw as string);
-    return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
-/** 从 localStorage 原始字符串解析自定义引擎列表 */
-function parseCustomEngines(raw: string | null): { name: string; url: string }[] {
-  try {
-    const a = raw == null ? [] : JSON.parse(raw as string);
-    return Array.isArray(a)
-      ? a.filter((x) => x && typeof x.name === 'string' && typeof x.url === 'string')
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-/** 从 localStorage 原始字符串解析快捷方式列表 */
-function parseShortcuts(raw: string | null): ShortcutItem[] {
-  try {
-    const a = raw == null ? [] : JSON.parse(raw as string);
-    return Array.isArray(a)
-      ? a.filter(
-          (x): x is ShortcutItem =>
-            x &&
-            typeof x.id === 'string' &&
-            typeof x.name === 'string' &&
-            typeof x.url === 'string' &&
-            typeof x.icon === 'string'
-        )
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-/** 解析当前选中的搜索引擎（该 key 不走 storage 前缀封装） */
-function parseSelectedEngine(raw: string | null): { id?: string; name?: string; url?: string } | undefined {
-  try {
-    if (!raw) return undefined;
-    const o = JSON.parse(raw) as { id?: unknown; name?: unknown; url?: unknown };
-    const id = typeof o.id === 'string' ? o.id : undefined;
-    const name = typeof o.name === 'string' ? o.name : undefined;
-    const url = typeof o.url === 'string' ? o.url : undefined;
-    if (!id && !name && !url) return undefined;
-    return { id, name, url };
-  } catch {
-    return undefined;
-  }
 }
 
 /** 将导入的 config 对象应用到 store 并持久化 */
@@ -163,54 +110,6 @@ function applyImportedConfig(
   if (typeof config.exportShortCutsEnabled === 'boolean') {
     store.exportShortCutsEnabled = config.exportShortCutsEnabled;
     setItem(StorageKey.ExportShortCutsEnabled, config.exportShortCutsEnabled);
-  }
-}
-
-/** 持久化导入的引擎相关数据（隐藏列表、自定义引擎） */
-function persistImportedEngineData(
-  hidden: unknown,
-  custom: unknown
-): void {
-  if (Array.isArray(hidden)) {
-    const ids = hidden.filter((x): x is string => typeof x === 'string');
-    setItem('hiddenEngineIds', JSON.stringify(ids));
-  }
-  if (Array.isArray(custom)) {
-    const list = custom.filter(
-      (x) => x && typeof x.name === 'string' && typeof x.url === 'string'
-    );
-    setItem('custom-engines', JSON.stringify(list));
-  }
-}
-
-/** 持久化导入的快捷方式 */
-function persistImportedShortcuts(shortcuts: unknown): void {
-  if (!Array.isArray(shortcuts)) return;
-  const list = shortcuts.filter(
-    (x): x is ShortcutItem =>
-      x &&
-      typeof x.id === 'string' &&
-      typeof x.name === 'string' &&
-      typeof x.url === 'string' &&
-      typeof x.icon === 'string'
-  );
-  setItem(StorageKey.Shortcuts, JSON.stringify(list));
-}
-
-/** 持久化导入的当前搜索引擎（该 key 不走 storage 前缀封装） */
-function persistImportedSelectedEngine(selected: unknown): void {
-  if (!selected || typeof selected !== 'object') return;
-  const s = selected as { id?: unknown; name?: unknown; url?: unknown };
-  const payload = {
-    id: typeof s.id === 'string' ? s.id : undefined,
-    name: typeof s.name === 'string' ? s.name : undefined,
-    url: typeof s.url === 'string' ? s.url : undefined
-  };
-  if (!payload.id && !payload.name && !payload.url) return;
-  try {
-    localStorage.setItem(StorageKey.SelectedEngine, JSON.stringify(payload));
-  } catch {
-    // ignore
   }
 }
 
@@ -363,24 +262,26 @@ export const useConfigStore = defineStore('config', {
       setItem(StorageKey.ExportBackgroundEnabled, this.exportBackgroundEnabled);
       setItem(StorageKey.ExportSearchEnginesEnabled, this.exportSearchEnginesEnabled);
       setItem(StorageKey.ExportShortCutsEnabled, this.exportShortCutsEnabled);
-      setItem(StorageKey.HiddenEngineIds, '[]');
+      useSearchEnginesStore().clearHiddenIds();
     },
-    /** 导出配置为 JSON 对象（含 config、hiddenEngineIds、customEngines） */
+    /** 导出配置为 JSON 对象（含 config、搜索引擎、快捷方式由各自 store 提供） */
     exportConfig(): ExportPayload {
       const configSnapshot = { ...this.$state };
       if (!this.exportBackgroundEnabled) configSnapshot.backgroundImage = '';
       const payload: ExportPayload = {
         version: 1,
         config: configSnapshot,
-        hiddenEngineIds: parseHiddenEngineIds(getItem(StorageKey.HiddenEngineIds)),
+        hiddenEngineIds: [],
         customEngines: []
       };
       if (this.exportSearchEnginesEnabled) {
-        payload.customEngines = parseCustomEngines(getItem(StorageKey.CustomEngines));
-        payload.currentEngine = parseSelectedEngine(localStorage.getItem(StorageKey.SelectedEngine));
+        const engineData = useSearchEnginesStore().getExportData();
+        payload.hiddenEngineIds = engineData.hiddenEngineIds;
+        payload.customEngines = engineData.customEngines;
+        payload.currentEngine = engineData.currentEngine;
       }
       if (this.exportShortCutsEnabled) {
-        payload.shortcuts = parseShortcuts(getItem(StorageKey.Shortcuts));
+        payload.shortcuts = [...useShortcutsStore().items];
       }
       return payload;
     },
@@ -393,10 +294,25 @@ export const useConfigStore = defineStore('config', {
         this as unknown as Record<string, unknown>,
         d.config as Record<string, unknown> | undefined
       );
-      persistImportedEngineData(d.hiddenEngineIds, d.customEngines);
-      persistImportedShortcuts(d.shortcuts);
-      persistImportedSelectedEngine(d.currentEngine);
+      useSearchEnginesStore().applyImport({
+        hiddenEngineIds: d.hiddenEngineIds,
+        customEngines: d.customEngines,
+        currentEngine: d.currentEngine
+      });
+      if (Array.isArray(d.shortcuts)) {
+        const list = d.shortcuts.filter(
+          (x): x is ShortcutItem =>
+            x &&
+            typeof x === 'object' &&
+            typeof (x as ShortcutItem).id === 'string' &&
+            typeof (x as ShortcutItem).name === 'string' &&
+            typeof (x as ShortcutItem).url === 'string' &&
+            typeof (x as ShortcutItem).icon === 'string'
+        );
+        useShortcutsStore().replaceAll(list);
+      }
       return true;
     }
   }
 });
+

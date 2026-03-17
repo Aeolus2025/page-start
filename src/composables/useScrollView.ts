@@ -4,7 +4,7 @@ import { watch, nextTick, type Ref } from 'vue';
  * 当 highlightIndex 变化时，将对应子元素滚动到可见区域。
  * 适用于下拉列表的键盘上下选择（history / suggest 等）。
  */
-export function useScrollIntoViewOnHighlight(
+export function useScrollView(
   listRef: Ref<HTMLElement | null>,
   highlightIndex: Ref<number>,
   options?: {

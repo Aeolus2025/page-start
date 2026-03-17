@@ -61,6 +61,18 @@ export const useShortcutsStore = defineStore('shortcuts', {
     clearAll() {
       this.items = [];
       saveShortcuts(this.items);
+    },
+    /** 导入时整体替换列表并持久化 */
+    replaceAll(list: ShortcutItem[]) {
+      this.items = list.filter(
+        (x): x is ShortcutItem =>
+          x &&
+          typeof x.id === 'string' &&
+          typeof x.name === 'string' &&
+          typeof x.url === 'string' &&
+          typeof x.icon === 'string'
+      );
+      saveShortcuts(this.items);
     }
   }
 });

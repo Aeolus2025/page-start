@@ -1,8 +1,34 @@
 import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import { jsonp } from '@/utils/jsonp';
-import { getSuggestConfig } from '@/utils/searchSuggest';
 import type { SearchEngine } from '@/types';
+
+/** 搜索建议联想接口配置（JSONP），仅本 composable 使用 */
+export interface SuggestConfig {
+  url: string;
+  paramKeyForKeyword: string;
+  callbackParam: string;
+  extraParams?: Record<string, string>;
+  parse: (response: unknown) => string[];
+}
+
+function baiduParse(res: unknown): string[] {
+  if (res && typeof res === 'object' && Array.isArray((res as { s?: unknown }).s)) {
+    return ((res as { s: unknown[] }).s).filter((x): x is string => typeof x === 'string');
+  }
+  return [];
+}
+
+const BAIDU_SUGGEST_CONFIG: SuggestConfig = {
+  url: 'https://suggestion.baidu.com/su',
+  paramKeyForKeyword: 'wd',
+  callbackParam: 'cb',
+  parse: baiduParse
+};
+
+function getSuggestConfig(_engineId: string): SuggestConfig | null {
+  return BAIDU_SUGGEST_CONFIG;
+}
 
 const DEBOUNCE_MS = 250;
 

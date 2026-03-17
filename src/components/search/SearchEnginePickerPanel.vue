@@ -96,51 +96,21 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { DEFAULT_ENGINES } from '@/constants/engines';
-import { getItem, setItem } from '@/utils/storage';
+import { useSearchEnginesStore } from '@/store/search';
 import SearchEngineIcon from './SearchEngineIcon.vue';
 import SearchEngineCustom from './SearchEngineCustom.vue';
 import type { SearchEngine } from '@/types';
 
-const STORAGE_KEY = 'page-start-custom-engines';
-const HIDDEN_IDS_KEY = 'hiddenEngineIds';
-
-function loadHiddenIds(): string[] {
-  try {
-    const raw = getItem(HIDDEN_IDS_KEY);
-    if (raw === null) return [];
-    const parsed = JSON.parse(raw as string);
-    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveHiddenIds(ids: string[]) {
-  setItem(HIDDEN_IDS_KEY, ids);
-}
+const store = useSearchEnginesStore();
+const { hiddenEngineIds, customEngines } = storeToRefs(store);
 
 const pickerIconErrors = ref(new Set<string>());
-const hiddenIds = ref<string[]>(loadHiddenIds());
 
 function onPickerIconError(eng: SearchEngine) {
   if (eng?.id) pickerIconErrors.value = new Set([...pickerIconErrors.value, eng.id]);
 }
-
-const loadCustomEngines = (): SearchEngine[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const list = JSON.parse(raw) as { name: string; url: string }[];
-    return Array.isArray(list) ? list.map((e, i) => ({ ...e, id: 'custom-' + i })) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveCustomEngines = (list: SearchEngine[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.map(({ name, url }) => ({ name, url }))));
-};
 
 const props = withDefaults(
   defineProps<{
@@ -157,17 +127,12 @@ const emit = defineEmits<{
   (e: 'after-select'): void;
 }>();
 
-const customEngines = ref(loadCustomEngines());
 const allEngines = computed(() => [
-  ...DEFAULT_ENGINES.filter((e) => !hiddenIds.value.includes(e.id)),
-  ...customEngines.value
+  ...DEFAULT_ENGINES.filter((e) => !hiddenEngineIds.value.includes(e.id)),
+  ...customEngines.value.map((e, i) => ({ ...e, id: 'custom-' + i }))
 ]);
 const currentEngine = computed(() => props.modelValue);
 const showAddForm = ref(false);
-
-watch(() => props.visible, (visible) => {
-  if (visible) hiddenIds.value = loadHiddenIds();
-});
 
 watch(allEngines, (engs) => {
   if (engs.length === 0) showAddForm.value = false;
@@ -189,35 +154,24 @@ const select = (eng: SearchEngine) => {
 };
 
 function onAddEngine(payload: { name: string; url: string }) {
-  const { name, url } = payload;
-  const list = loadCustomEngines();
-  list.push({ id: 'custom-' + list.length, name, url });
-  saveCustomEngines(list);
-  customEngines.value = loadCustomEngines();
+  store.addCustomEngine(payload);
   showAddForm.value = false;
 }
 
 function removeEngine(eng: SearchEngine, e: Event) {
   e.stopPropagation();
   if (eng.id.startsWith('custom-')) {
-    const next = customEngines.value.filter((c) => c.id !== eng.id);
-    saveCustomEngines(next);
-    customEngines.value = loadCustomEngines();
+    const idx = customEngines.value.findIndex((c) => c.name === eng.name && c.url === eng.url);
+    if (idx >= 0) store.removeCustomEngineAt(idx);
   } else {
-    hiddenIds.value = [...hiddenIds.value, eng.id];
-    saveHiddenIds(hiddenIds.value);
+    store.setHiddenIds([...hiddenEngineIds.value, eng.id]);
   }
 }
 
 function restoreDefaultEngines() {
-  hiddenIds.value = [];
-  saveHiddenIds([]);
-  saveCustomEngines([]);
-  customEngines.value = [];
+  store.resetToDefaults();
   const first = DEFAULT_ENGINES[0];
-  if (first) {
-    emit('update:modelValue', { ...first });
-  }
+  if (first) emit('update:modelValue', { ...first });
 }
 </script>
 

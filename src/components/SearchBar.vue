@@ -74,17 +74,17 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
-import SearchEnginePickerPanel from './SearchEnginePickerPanel.vue';
-import SearchEngineIcon from './SearchEngineIcon.vue';
-import SearchHistory from './SearchHistory.vue';
-import SearchSuggest from './SearchSuggest.vue';
+import SearchEnginePickerPanel from './search/SearchEnginePickerPanel.vue';
+import SearchEngineIcon from './search/SearchEngineIcon.vue';
+import SearchHistory from './search/SearchHistory.vue';
+import SearchSuggest from './search/SearchSuggest.vue';
 import { useSelectedEngine } from '@/composables/useSelectedEngine';
 import { useSearchFocus } from '@/composables/useSearchFocus';
 import { useSearchHistory } from '@/composables/useSearchHistory';
 import { useSearchSuggest } from '@/composables/useSearchSuggest';
 import { useSearchNavigate } from '@/composables/useSearchNavigate';
 import { useClickOutside } from '@/composables/useClickOutside';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 interface SearchBarProps {
   shouldFocusOnMount?: boolean;

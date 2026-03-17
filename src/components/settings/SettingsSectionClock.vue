@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 const config = useConfigStore();
 

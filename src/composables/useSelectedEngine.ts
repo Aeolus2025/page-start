@@ -1,18 +1,13 @@
-import { ref, watch } from 'vue';
-import { loadSavedEngine, saveSelectedEngine } from '@/constants/engines';
+import { computed } from 'vue';
+import { useSearchEnginesStore } from '@/store/search';
 import type { SearchEngine } from '@/types';
 
 export function useSelectedEngine() {
-  const currentEngine = ref<SearchEngine>(loadSavedEngine());
-
-  function saveEngine(eng: SearchEngine | null | undefined) {
-    if (!eng) return;
-    saveSelectedEngine(eng);
-  }
-
-  watch(currentEngine, (v) => {
-    if (v) saveEngine(v);
-  }, { deep: true });
-
+  const store = useSearchEnginesStore();
+  const currentEngine = computed<SearchEngine>({
+    get: () => store.selectedEngine,
+    set: (eng) => { if (eng) store.setSelectedEngine(eng); }
+  });
+  const saveEngine = (eng: SearchEngine | null | undefined) => { if (eng) store.setSelectedEngine(eng); };
   return { currentEngine, saveEngine };
 }

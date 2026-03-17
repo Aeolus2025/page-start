@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 const config = useConfigStore();
 const importInputRef = ref<HTMLInputElement | null>(null);

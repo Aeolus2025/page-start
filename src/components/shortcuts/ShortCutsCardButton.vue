@@ -48,7 +48,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { ShortcutItem } from '@/types';
-import { getFirstLetter, isIconUrl } from '@/utils/shortcutIcon';
+import { getFirstLetter } from '@/utils/getIcon';
+import { isIconUrl } from '@/utils/checkUrl';
 
 const props = defineProps<{
   item: ShortcutItem;

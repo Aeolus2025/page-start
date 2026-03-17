@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
-import { getShortcutFaviconUrl } from '@/utils/engine';
+import { getFaviconFromUrl, getFirstLetter } from '@/utils/getIcon';
 
 interface ShortcutFormValue {
   name: string;
@@ -152,8 +152,8 @@ function handleSubmit() {
     return;
   }
   const href = normalizeUrl(url);
-  const icon = localForm.icon.trim() || getShortcutFaviconUrl(href);
-  const iconVal = icon || '🔗';
+  const icon = localForm.icon.trim() || getFaviconFromUrl(href);
+  const iconVal = icon || getFirstLetter(name);
   emit('submit', { name, url: href, icon: iconVal });
 }
 

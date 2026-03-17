@@ -15,8 +15,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getEngineIconUrl, isIconfontSymbol } from '@/utils/engine';
+import { getFaviconFromUrl, getFirstLetter } from '@/utils/getIcon';
 import type { SearchEngine } from '@/types';
+
+function isIconfontSymbol(icon: unknown): icon is string {
+  return icon != null && typeof icon === 'string' && icon.trim().length > 0;
+}
+
+function getEngineIconUrl(engine: SearchEngine | null | undefined): string {
+  if (!engine) return '';
+  if (engine.iconUrl && typeof engine.iconUrl === 'string') return engine.iconUrl.trim();
+  return getFaviconFromUrl(engine.url || '');
+}
 
 const props = withDefaults(
   defineProps<{
@@ -43,10 +53,7 @@ const iconUrl = computed(() => {
   return getEngineIconUrl(props.engine) || '';
 });
 
-const fallback = computed(() => {
-  const name = props.engine?.name;
-  return name ? name.slice(0, 1) : '🔍';
-});
+const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
 </script>
 
 <style scoped>

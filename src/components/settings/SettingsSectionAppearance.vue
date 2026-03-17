@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 import type { ThemeMode } from '@/types';
 
 const config = useConfigStore();

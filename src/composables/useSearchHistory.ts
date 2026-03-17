@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { getItem, setItem } from '@/utils/storage';
 import { StorageKey } from '@/types';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 const MAX_ITEMS = 20;
 

@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { ref, toRef } from 'vue';
-import { useScrollIntoViewOnHighlight } from '@/composables/useScrollIntoViewOnHighlight';
+import { useScrollView } from '@/composables/useScrollView';
 
 const props = defineProps<{
   visible: boolean;
@@ -54,7 +54,7 @@ defineEmits<{
 }>();
 
 const listRef = ref<HTMLUListElement | null>(null);
-useScrollIntoViewOnHighlight(listRef, toRef(props, 'highlightIndex'), { enabled: toRef(props, 'visible') });
+useScrollView(listRef, toRef(props, 'highlightIndex'), { enabled: toRef(props, 'visible') });
 </script>
 
 <style scoped>

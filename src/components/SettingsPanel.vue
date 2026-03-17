@@ -29,7 +29,7 @@ import SettingsSectionBackground from './settings/SettingsSectionBackground.vue'
 import SettingsSectionClock from './settings/SettingsSectionClock.vue';
 import SettingsSectionSearch from './settings/SettingsSectionSearch.vue';
 import SettingsSectionImportExport from './settings/SettingsSectionImportExport.vue';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 import { useShortcutsStore } from '@/store/shortcuts';
 
 withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });

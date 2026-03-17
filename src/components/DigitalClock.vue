@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 const emit = defineEmits<{ (e: 'blur-search'): void }>();
 

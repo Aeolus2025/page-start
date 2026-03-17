@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useConfigStore } from '@/store/config';
+import { useConfigStore } from '@/store/settings';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
