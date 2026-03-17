@@ -1,6 +1,17 @@
 <template>
   <section class="settings-section">
     <h3 class="section-title">导入/导出配置</h3>
+    <div class="option-row">
+      <span class="option-label">导出时包含背景图</span>
+      <label class="switch-label">
+        <input
+          type="checkbox"
+          :checked="config.exportIncludeBackground"
+          @change="onExportIncludeBackgroundChange"
+        />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
     <div class="import-export-row">
       <input
         ref="importInputRef"
@@ -12,17 +23,6 @@
       />
       <button type="button" class="btn-import" @click="triggerImport">导入配置</button>
       <button type="button" class="btn-export" @click="exportConfig">导出配置</button>
-    </div>
-    <div class="option-row">
-      <span class="option-label">导出时包含背景图</span>
-      <label class="switch-label">
-        <input
-          type="checkbox"
-          :checked="config.exportIncludeBackground"
-          @change="onExportIncludeBackgroundChange"
-        />
-        <span class="switch-slider"></span>
-      </label>
     </div>
   </section>
 </template>

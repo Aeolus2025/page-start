@@ -16,8 +16,13 @@
           @picker-open="handlePickerOpen"
         />
         <Transition name="slide-down">
-          <div v-if="showShortcutPanel" class="shortcut-sheet" @contextmenu.stop.prevent>
-            <ShortCutsPanel />
+          <div
+            v-if="showShortcutPanel"
+            class="shortcut-sheet"
+            :class="{ 'has-modal-open': shortcutEditorOpen }"
+            @contextmenu.stop.prevent
+          >
+            <ShortCutsPanel @editor-open-change="shortcutEditorOpen = $event" />
           </div>
         </Transition>
       </div>
@@ -66,6 +71,7 @@ const backgroundStyle = computed(() => ({ backgroundImage: `url(${config.backgro
 const searchFocused = ref(false);
 const settingsVisible = ref(false);
 const pickerOpen = ref(false);
+const shortcutEditorOpen = ref(false);
 
 const contentShifted = ref(false);
 function updateShifted() {
@@ -160,6 +166,15 @@ body, html, #app {
   width: 100%;
   max-width: 520px;
   box-sizing: border-box;
+  outline: none;
+  box-shadow: none;
+}
+.content-block:focus-within,
+.shortcut-sheet:focus-within {
+  outline: none;
+}
+.shortcut-sheet {
+  outline: none;
 }
 .settings-fab {
   position: fixed; top: 16px; right: 16px; z-index: 5;
@@ -181,6 +196,7 @@ body, html, #app {
   box-shadow: none;
   border-color: var(--glass-border-strong);
 }
+/* 快捷面板：不设 box-shadow，避免深浅色主题下四角出现直角阴影 */
 .shortcut-sheet {
   align-self: center;
   width: fit-content;
@@ -192,9 +208,24 @@ body, html, #app {
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--shortcut-sheet-border-color);
   border-radius: 24px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: none;
+  /* 关键：裁剪 backdrop-filter 的绘制区域，避免出现“直角模糊/阴影” */
+  overflow: hidden;
+  isolation: isolate;
   box-sizing: border-box;
   color: var(--glass-text);
+}
+.shortcut-sheet.has-modal-open:focus-within {
+  outline: none;
+}
+
+/* 兜底：弹窗打开时，禁用快捷面板区域内的焦点环/阴影，避免出现直角矩形框（outline 不跟随圆角） */
+.shortcut-sheet.has-modal-open :focus-visible {
+  outline: none !important;
+}
+.shortcut-sheet.has-modal-open,
+.shortcut-sheet.has-modal-open * {
+  box-shadow: none !important;
 }
 .slide-down-enter-active,
 .slide-down-leave-active { transition: opacity 0.2s ease, transform 0.25s ease; }
@@ -208,16 +239,6 @@ body, html, #app {
 .fade-leave-to { opacity: 0; }
 .fade-enter-to,
 .fade-leave-from { opacity: 1; }
-
-/* 深色：快捷面板去掉阴影（背景/边框由 style.css token 控制） */
-[data-theme="dark"] .shortcut-sheet {
-  box-shadow: none;
-}
-@media (prefers-color-scheme: dark) {
-  [data-theme="system"] .shortcut-sheet {
-    box-shadow: none;
-  }
-}
 
 @media (max-width: 640px) {
   .content-layer {

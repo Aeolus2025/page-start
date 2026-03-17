@@ -1,63 +1,68 @@
 <template>
-  <Transition name="modal-fade">
-    <div v-if="visible" class="add-backdrop" @click.self="onCancel">
-      <div class="add-modal" @mousedown.stop>
-        <h3 class="add-title">{{ isEdit ? '修改快捷方式' : '添加快捷方式' }}</h3>
-        <form class="add-form" @submit.prevent="handleSubmit">
-          <div class="add-field">
-            <label for="shortcut-name">名称</label>
-            <input
-              id="shortcut-name"
-              v-model="localForm.name"
-              type="text"
-              placeholder="如：GitHub"
-              required
-              maxlength="32"
-            />
-          </div>
-          <div class="add-field">
-            <label for="shortcut-url">链接</label>
-            <input
-              id="shortcut-url"
-              v-model="localForm.url"
-              type="url"
-              placeholder="https://..."
-              required
-            />
-          </div>
-          <div class="add-field">
-            <label>图标（可选，不上传则使用链接默认图标）</label>
-            <div class="add-icon-upload">
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div v-if="visible" class="add-backdrop" @click.self="onCancel">
+        <div class="add-modal" @mousedown.stop>
+          <h3 class="add-title">{{ isEdit ? '修改快捷方式' : '添加快捷方式' }}</h3>
+          <form class="add-form" @submit.prevent="handleSubmit">
+            <div class="add-field">
+              <label for="shortcut-name">名称</label>
               <input
-                id="shortcut-icon-file"
-                type="file"
-                accept="image/*"
-                class="add-icon-input"
-                @change="onIconFileChange"
+                id="shortcut-name"
+                v-model="localForm.name"
+                type="text"
+                placeholder="如：GitHub"
+                required
+                maxlength="32"
               />
-              <label for="shortcut-icon-file" class="add-icon-label">
-                <img v-if="localForm.icon" :src="localForm.icon" class="add-icon-preview" alt="" />
-                <span v-else class="add-icon-placeholder">上传图标</span>
-              </label>
-              <button
-                v-if="localForm.icon"
-                type="button"
-                class="add-icon-clear"
-                @click="clearIconUpload"
-              >
-                清除
-              </button>
             </div>
-          </div>
-          <p v-if="error" class="add-error">{{ error }}</p>
-          <div class="add-actions">
-            <button type="button" class="btn-cancel" @click="onCancel">取消</button>
-            <button type="submit" class="btn-submit">{{ isEdit ? '保存' : '添加' }}</button>
-          </div>
-        </form>
+            <div class="add-field">
+              <label for="shortcut-url">链接</label>
+              <input
+                id="shortcut-url"
+                v-model="localForm.url"
+                type="url"
+                placeholder="https://..."
+                required
+              />
+            </div>
+            <div class="add-field">
+              <label>图标（可选，不上传则使用链接默认图标）</label>
+              <div class="add-icon-upload">
+                <input
+                  id="shortcut-icon-file"
+                  type="file"
+                  accept="image/*"
+                  class="add-icon-input"
+                  @change="onIconFileChange"
+                />
+                <label for="shortcut-icon-file" class="add-icon-label">
+                  <img v-if="localForm.icon" :src="localForm.icon" class="add-icon-preview" alt="" />
+                  <span v-else class="add-icon-placeholder" aria-hidden="true">
+                    <i class="iconfont icon-yunshangchuan add-icon-placeholder-icon"></i>
+                    <span class="add-icon-placeholder-text">上传</span>
+                  </span>
+                </label>
+                <button
+                  v-if="localForm.icon"
+                  type="button"
+                  class="add-icon-clear"
+                  @click="clearIconUpload"
+                >
+                  清除
+                </button>
+              </div>
+            </div>
+            <p v-if="error" class="add-error">{{ error }}</p>
+            <div class="add-actions">
+              <button type="button" class="btn-cancel" @click="onCancel">取消</button>
+              <button type="submit" class="btn-submit">{{ isEdit ? '保存' : '添加' }}</button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -245,7 +250,8 @@ function onCancel() {
   border-radius: 12px;
   cursor: pointer;
   overflow: hidden;
-  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s, transform var(--transition-fast);
 }
 
 .add-icon-label:hover {
@@ -257,11 +263,37 @@ function onCancel() {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  pointer-events: none;
 }
 
 .add-icon-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
   font-size: 12px;
   color: var(--glass-text-muted);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.add-icon-label:hover .add-icon-placeholder {
+  color: var(--glass-text);
+}
+
+.add-icon-placeholder-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: currentColor;
+}
+
+.add-icon-placeholder-text {
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
 }
 
 .add-icon-clear {

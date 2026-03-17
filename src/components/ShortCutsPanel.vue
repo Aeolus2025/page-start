@@ -28,12 +28,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useShortcutsStore } from '@/store/shortcuts';
 import { useShortCutsGridLayout } from '@/composables/useShortCutsGridLayout';
 import type { ShortcutItem } from '@/types';
 import ShortCutsCardButton from './shortcuts/ShortCutsCardButton.vue';
 import ShortCutsEditorPanel from './shortcuts/ShortCutsEditorPanel.vue';
+
+const emit = defineEmits<{ (e: 'editor-open-change', open: boolean): void }>();
 
 const shortcuts = useShortcutsStore();
 const wrapRef = ref<HTMLElement | null>(null);
@@ -41,6 +43,9 @@ const { gridWrapStyle } = useShortCutsGridLayout(wrapRef);
 
 const editingId = ref<string | null>(null);
 const editorVisible = ref(false);
+watch(editorVisible, (open) => {
+  emit('editor-open-change', open);
+});
 const editorForm = reactive<{ name: string; url: string; icon: string }>({
   name: '',
   url: '',
@@ -52,6 +57,7 @@ function openAdd() {
   editorForm.name = '';
   editorForm.url = '';
   editorForm.icon = '';
+  emit('editor-open-change', true);
   editorVisible.value = true;
 }
 
@@ -60,6 +66,7 @@ function openEdit(item: ShortcutItem) {
   editorForm.name = item.name;
   editorForm.url = item.url;
   editorForm.icon = item.icon;
+  emit('editor-open-change', true);
   editorVisible.value = true;
 }
 
