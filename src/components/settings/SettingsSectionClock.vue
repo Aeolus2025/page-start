@@ -5,11 +5,11 @@
       <span class="option-label">制式</span>
       <div class="option-group">
         <label class="radio-label">
-          <input type="radio" :checked="config.timeFormat24" value="24" @change="config.setTimeFormat24(true)" />
+          <input type="radio" :checked="config.timeFormat24Enabled" value="24" @change="config.setTimeFormat24Enabled(true)" />
           24 小时
         </label>
         <label class="radio-label">
-          <input type="radio" :checked="!config.timeFormat24" value="12" @change="config.setTimeFormat24(false)" />
+          <input type="radio" :checked="!config.timeFormat24Enabled" value="12" @change="config.setTimeFormat24Enabled(false)" />
           12 小时
         </label>
       </div>
@@ -17,7 +17,7 @@
     <div class="option-row">
       <span class="option-label">显示秒</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.timeShowSeconds" @change="onTimeShowSecondsChange" />
+        <input type="checkbox" :checked="config.timeShowSecondsEnabled" @change="onTimeShowSecondsChange" />
         <span class="switch-slider"></span>
       </label>
     </div>
@@ -53,7 +53,7 @@ import { useConfigStore } from '@/store/config';
 const config = useConfigStore();
 
 function onTimeShowSecondsChange(e: Event) {
-  config.setTimeShowSeconds((e.target as HTMLInputElement).checked);
+  config.setTimeShowSecondsEnabled((e.target as HTMLInputElement).checked);
 }
 function onTimeFontSizeChange(e: Event) {
   config.setTimeFontSize((e.target as HTMLSelectElement).value);

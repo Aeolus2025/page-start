@@ -17,7 +17,7 @@ import { useConfigStore } from '@/store/config';
 const emit = defineEmits<{ (e: 'blur-search'): void }>();
 
 const config = useConfigStore();
-const { timeFormat24, timeShowSeconds, timeFontSize, timeFontWeight, timeFontStyle } = storeToRefs(config);
+const { timeFormat24Enabled, timeShowSecondsEnabled, timeFontSize, timeFontWeight, timeFontStyle } = storeToRefs(config);
 
 const currentTime = ref('');
 
@@ -26,16 +26,16 @@ const updateTime = () => {
   let h = now.getHours();
   const m = now.getMinutes();
   const s = now.getSeconds();
-  if (!timeFormat24.value) {
+  if (!timeFormat24Enabled.value) {
     const period = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    if (timeShowSeconds.value) {
+    if (timeShowSecondsEnabled.value) {
       currentTime.value = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} ${period}`;
     } else {
       currentTime.value = `${h}:${String(m).padStart(2, '0')} ${period}`;
     }
   } else {
-    if (timeShowSeconds.value) {
+    if (timeShowSecondsEnabled.value) {
       currentTime.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     } else {
       currentTime.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -47,7 +47,7 @@ const sizeClass = computed(() => `size-${timeFontSize.value}`);
 const weightClass = computed(() => `weight-${timeFontWeight.value}`);
 const styleClass = computed(() => `style-${timeFontStyle.value}`);
 
-const intervalMs = computed(() => (timeShowSeconds.value ? 1000 : 60000));
+const intervalMs = computed(() => (timeShowSecondsEnabled.value ? 1000 : 60000));
 let timer: ReturnType<typeof setInterval> | null = null;
 
 function startTimer() {
@@ -56,7 +56,7 @@ function startTimer() {
   timer = setInterval(updateTime, intervalMs.value);
 }
 
-watch([timeFormat24, timeShowSeconds], () => {
+watch([timeFormat24Enabled, timeShowSecondsEnabled], () => {
   startTimer();
 });
 

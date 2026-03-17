@@ -4,7 +4,7 @@
     <div class="option-row">
       <span class="option-label">页面加载时聚焦搜索栏</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.focusSearchOnLoad" @change="onFocusSearchOnLoadChange" />
+        <input type="checkbox" :checked="config.focusSearchOnLoadEnabled" @change="onFocusSearchOnLoadChange" />
         <span class="switch-slider"></span>
       </label>
     </div>
@@ -25,7 +25,7 @@
     <div class="option-row">
       <span class="option-label">在新标签页打开搜索结果</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.openSearchInNewTab" @change="onOpenSearchInNewTabChange" />
+        <input type="checkbox" :checked="config.openSearchInNewTabEnabled" @change="onOpenSearchInNewTabChange" />
         <span class="switch-slider"></span>
       </label>
     </div>
@@ -38,7 +38,7 @@ import { useConfigStore } from '@/store/config';
 const config = useConfigStore();
 
 function onFocusSearchOnLoadChange(e: Event) {
-  config.setFocusSearchOnLoad((e.target as HTMLInputElement).checked);
+  config.setFocusSearchOnLoadEnabled((e.target as HTMLInputElement).checked);
 }
 
 function onSearchHistoryChange(e: Event) {
@@ -50,7 +50,7 @@ function onSearchSuggestChange(e: Event) {
 }
 
 function onOpenSearchInNewTabChange(e: Event) {
-  config.setOpenSearchInNewTab((e.target as HTMLInputElement).checked);
+  config.setOpenSearchInNewTabEnabled((e.target as HTMLInputElement).checked);
 }
 </script>
 

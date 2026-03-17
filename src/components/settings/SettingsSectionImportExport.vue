@@ -2,12 +2,34 @@
   <section class="settings-section">
     <h3 class="section-title">导入/导出配置</h3>
     <div class="option-row">
-      <span class="option-label">导出时包含背景图</span>
+      <span class="option-label">导出背景图</span>
       <label class="switch-label">
         <input
           type="checkbox"
-          :checked="config.exportIncludeBackground"
-          @change="onExportIncludeBackgroundChange"
+          :checked="config.exportBackgroundEnabled"
+          @change="onExportBackgroundEnabledChange"
+        />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div class="option-row">
+      <span class="option-label">导出搜索引擎</span>
+      <label class="switch-label">
+        <input
+          type="checkbox"
+          :checked="config.exportSearchEnginesEnabled"
+          @change="onExportSearchEnginesEnabledChange"
+        />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+    <div class="option-row">
+      <span class="option-label">导出快捷方式</span>
+      <label class="switch-label">
+        <input
+          type="checkbox"
+          :checked="config.exportShortCutsEnabled"
+          @change="onExportShortCutsEnabledChange"
         />
         <span class="switch-slider"></span>
       </label>
@@ -56,8 +78,16 @@ function onImportFile(e: Event) {
   reader.readAsText(file, 'UTF-8');
 }
 
-function onExportIncludeBackgroundChange(e: Event) {
-  config.setExportIncludeBackground((e.target as HTMLInputElement).checked);
+function onExportBackgroundEnabledChange(e: Event) {
+  config.setExportBackgroundEnabled((e.target as HTMLInputElement).checked);
+}
+
+function onExportSearchEnginesEnabledChange(e: Event) {
+  config.setExportSearchEnginesEnabled((e.target as HTMLInputElement).checked);
+}
+
+function onExportShortCutsEnabledChange(e: Event) {
+  config.setExportShortCutsEnabled((e.target as HTMLInputElement).checked);
 }
 
 function exportConfig() {

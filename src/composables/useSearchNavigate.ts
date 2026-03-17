@@ -15,7 +15,7 @@ export function useSearchNavigate(currentEngine: Ref<SearchEngine | null | undef
 
   function navigateToSearchUrl(url: string) {
     if (!url) return;
-    if (config.openSearchInNewTab) {
+    if (config.openSearchInNewTabEnabled) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = url;

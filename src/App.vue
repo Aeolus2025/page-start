@@ -50,7 +50,7 @@ import ShortCutsPanel from './components/ShortCutsPanel.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
 
 const config = useConfigStore();
-const { focusSearchOnLoad, theme } = storeToRefs(config);
+const { focusSearchOnLoadEnabled, theme } = storeToRefs(config);
 
 function applyTheme(mode: string) {
   document.documentElement.setAttribute('data-theme', mode);
@@ -65,7 +65,7 @@ const {
   openShortcutPanel,
 } = useShortCutsPanel(contentBlockRef);
 
-const focusSearchOnMount = computed(() => focusSearchOnLoad.value && !panelJustClosed.value);
+const focusSearchOnMount = computed(() => focusSearchOnLoadEnabled.value && !panelJustClosed.value);
 const backgroundStyle = computed(() => ({ backgroundImage: `url(${config.backgroundUrl})` }));
 
 const searchFocused = ref(false);

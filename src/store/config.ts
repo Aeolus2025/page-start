@@ -4,7 +4,7 @@
  */
 import { defineStore } from 'pinia';
 import { getItem, setItem } from '@/utils/storage';
-import type { ConfigState, ExportPayload, ThemeMode } from '@/types';
+import type { ConfigState, ExportPayload, ThemeMode, ShortcutItem } from '@/types';
 import { StorageKey } from '@/types';
 
 const THEME_VALUES: ThemeMode[] = ['light', 'dark', 'system'];
@@ -20,16 +20,18 @@ const defaultBg = '/image.jpg';
 export const DEFAULT_CONFIG: ConfigState = {
   theme: 'system',
   backgroundImage: '',
-  timeFormat24: true,
-  timeShowSeconds: false,
+  timeFormat24Enabled: true,
+  timeShowSecondsEnabled: false,
   timeFontSize: 'medium',
   timeFontWeight: 'normal',
   timeFontStyle: 'normal',
-  focusSearchOnLoad: true,
+  focusSearchOnLoadEnabled: true,
   searchHistoryEnabled: true,
   searchSuggestEnabled: true,
-  openSearchInNewTab: false,
-  exportIncludeBackground: true
+  openSearchInNewTabEnabled: false,
+  exportBackgroundEnabled: true,
+  exportSearchEnginesEnabled: true,
+  exportShortCutsEnabled: true
 };
 
 function readBool(key: StorageKey, defaultValue: boolean): boolean {
@@ -65,6 +67,40 @@ function parseCustomEngines(raw: string | null): { name: string; url: string }[]
   }
 }
 
+/** 从 localStorage 原始字符串解析快捷方式列表 */
+function parseShortcuts(raw: string | null): ShortcutItem[] {
+  try {
+    const a = raw == null ? [] : JSON.parse(raw as string);
+    return Array.isArray(a)
+      ? a.filter(
+          (x): x is ShortcutItem =>
+            x &&
+            typeof x.id === 'string' &&
+            typeof x.name === 'string' &&
+            typeof x.url === 'string' &&
+            typeof x.icon === 'string'
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** 解析当前选中的搜索引擎（该 key 不走 storage 前缀封装） */
+function parseSelectedEngine(raw: string | null): { id?: string; name?: string; url?: string } | undefined {
+  try {
+    if (!raw) return undefined;
+    const o = JSON.parse(raw) as { id?: unknown; name?: unknown; url?: unknown };
+    const id = typeof o.id === 'string' ? o.id : undefined;
+    const name = typeof o.name === 'string' ? o.name : undefined;
+    const url = typeof o.url === 'string' ? o.url : undefined;
+    if (!id && !name && !url) return undefined;
+    return { id, name, url };
+  } catch {
+    return undefined;
+  }
+}
+
 /** 将导入的 config 对象应用到 store 并持久化 */
 function applyImportedConfig(
   store: Record<string, unknown>,
@@ -79,13 +115,13 @@ function applyImportedConfig(
     store.backgroundImage = config.backgroundImage;
     setItem('backgroundImage', config.backgroundImage);
   }
-  if (typeof config.timeFormat24 === 'boolean') {
-    store.timeFormat24 = config.timeFormat24;
-    setItem('timeFormat24', config.timeFormat24);
+  if (typeof config.timeFormat24Enabled === 'boolean') {
+    store.timeFormat24Enabled = config.timeFormat24Enabled;
+    setItem(StorageKey.TimeFormat24Enabled, config.timeFormat24Enabled);
   }
-  if (typeof config.timeShowSeconds === 'boolean') {
-    store.timeShowSeconds = config.timeShowSeconds;
-    setItem('timeShowSeconds', config.timeShowSeconds);
+  if (typeof config.timeShowSecondsEnabled === 'boolean') {
+    store.timeShowSecondsEnabled = config.timeShowSecondsEnabled;
+    setItem(StorageKey.TimeShowSecondsEnabled, config.timeShowSecondsEnabled);
   }
   if (['small', 'medium', 'large'].includes(config.timeFontSize as string)) {
     const val = config.timeFontSize as ConfigState['timeFontSize'];
@@ -100,9 +136,9 @@ function applyImportedConfig(
     store.timeFontStyle = config.timeFontStyle as ConfigState['timeFontStyle'];
     setItem('timeFontStyle', store.timeFontStyle as string);
   }
-  if (typeof config.focusSearchOnLoad === 'boolean') {
-    store.focusSearchOnLoad = config.focusSearchOnLoad;
-    setItem('focusSearchOnLoad', config.focusSearchOnLoad);
+  if (typeof config.focusSearchOnLoadEnabled === 'boolean') {
+    store.focusSearchOnLoadEnabled = config.focusSearchOnLoadEnabled;
+    setItem(StorageKey.FocusSearchOnLoadEnabled, config.focusSearchOnLoadEnabled);
   }
   if (typeof config.searchHistoryEnabled === 'boolean') {
     store.searchHistoryEnabled = config.searchHistoryEnabled;
@@ -112,13 +148,21 @@ function applyImportedConfig(
     store.searchSuggestEnabled = config.searchSuggestEnabled;
     setItem('searchSuggestEnabled', config.searchSuggestEnabled);
   }
-  if (typeof config.openSearchInNewTab === 'boolean') {
-    store.openSearchInNewTab = config.openSearchInNewTab;
-    setItem('openSearchInNewTab', config.openSearchInNewTab);
+  if (typeof config.openSearchInNewTabEnabled === 'boolean') {
+    store.openSearchInNewTabEnabled = config.openSearchInNewTabEnabled;
+    setItem(StorageKey.OpenSearchInNewTabEnabled, config.openSearchInNewTabEnabled);
   }
-  if (typeof config.exportIncludeBackground === 'boolean') {
-    store.exportIncludeBackground = config.exportIncludeBackground;
-    setItem('exportIncludeBackground', config.exportIncludeBackground);
+  if (typeof config.exportBackgroundEnabled === 'boolean') {
+    store.exportBackgroundEnabled = config.exportBackgroundEnabled;
+    setItem(StorageKey.ExportBackgroundEnabled, config.exportBackgroundEnabled);
+  }
+  if (typeof config.exportSearchEnginesEnabled === 'boolean') {
+    store.exportSearchEnginesEnabled = config.exportSearchEnginesEnabled;
+    setItem(StorageKey.ExportSearchEnginesEnabled, config.exportSearchEnginesEnabled);
+  }
+  if (typeof config.exportShortCutsEnabled === 'boolean') {
+    store.exportShortCutsEnabled = config.exportShortCutsEnabled;
+    setItem(StorageKey.ExportShortCutsEnabled, config.exportShortCutsEnabled);
   }
 }
 
@@ -139,13 +183,44 @@ function persistImportedEngineData(
   }
 }
 
+/** 持久化导入的快捷方式 */
+function persistImportedShortcuts(shortcuts: unknown): void {
+  if (!Array.isArray(shortcuts)) return;
+  const list = shortcuts.filter(
+    (x): x is ShortcutItem =>
+      x &&
+      typeof x.id === 'string' &&
+      typeof x.name === 'string' &&
+      typeof x.url === 'string' &&
+      typeof x.icon === 'string'
+  );
+  setItem(StorageKey.Shortcuts, JSON.stringify(list));
+}
+
+/** 持久化导入的当前搜索引擎（该 key 不走 storage 前缀封装） */
+function persistImportedSelectedEngine(selected: unknown): void {
+  if (!selected || typeof selected !== 'object') return;
+  const s = selected as { id?: unknown; name?: unknown; url?: unknown };
+  const payload = {
+    id: typeof s.id === 'string' ? s.id : undefined,
+    name: typeof s.name === 'string' ? s.name : undefined,
+    url: typeof s.url === 'string' ? s.url : undefined
+  };
+  if (!payload.id && !payload.name && !payload.url) return;
+  try {
+    localStorage.setItem(StorageKey.SelectedEngine, JSON.stringify(payload));
+  } catch {
+    // ignore
+  }
+}
+
 export const useConfigStore = defineStore('config', {
   state(): ConfigState {
     return {
       theme: readTheme(StorageKey.Theme, DEFAULT_CONFIG.theme),
       backgroundImage: readStr(StorageKey.BackgroundImage, DEFAULT_CONFIG.backgroundImage),
-      timeFormat24: readBool(StorageKey.TimeFormat24, DEFAULT_CONFIG.timeFormat24),
-      timeShowSeconds: readBool(StorageKey.TimeShowSeconds, DEFAULT_CONFIG.timeShowSeconds),
+      timeFormat24Enabled: readBool(StorageKey.TimeFormat24Enabled, DEFAULT_CONFIG.timeFormat24Enabled),
+      timeShowSecondsEnabled: readBool(StorageKey.TimeShowSecondsEnabled, DEFAULT_CONFIG.timeShowSecondsEnabled),
       timeFontSize:
         (readStr(StorageKey.TimeFontSize, DEFAULT_CONFIG.timeFontSize) as ConfigState['timeFontSize']) ||
         DEFAULT_CONFIG.timeFontSize,
@@ -154,7 +229,10 @@ export const useConfigStore = defineStore('config', {
       timeFontStyle:
         (readStr(StorageKey.TimeFontStyle, DEFAULT_CONFIG.timeFontStyle) as ConfigState['timeFontStyle']) ||
         DEFAULT_CONFIG.timeFontStyle,
-      focusSearchOnLoad: readBool(StorageKey.FocusSearchOnLoad, DEFAULT_CONFIG.focusSearchOnLoad),
+      focusSearchOnLoadEnabled: readBool(
+        StorageKey.FocusSearchOnLoadEnabled,
+        DEFAULT_CONFIG.focusSearchOnLoadEnabled
+      ),
       searchHistoryEnabled: readBool(
         StorageKey.SearchHistoryEnabled,
         DEFAULT_CONFIG.searchHistoryEnabled
@@ -163,10 +241,21 @@ export const useConfigStore = defineStore('config', {
         StorageKey.SearchSuggestEnabled,
         DEFAULT_CONFIG.searchSuggestEnabled
       ),
-      openSearchInNewTab: readBool(StorageKey.OpenSearchInNewTab, DEFAULT_CONFIG.openSearchInNewTab),
-      exportIncludeBackground: readBool(
-        StorageKey.ExportIncludeBackground,
-        DEFAULT_CONFIG.exportIncludeBackground
+      openSearchInNewTabEnabled: readBool(
+        StorageKey.OpenSearchInNewTabEnabled,
+        DEFAULT_CONFIG.openSearchInNewTabEnabled
+      ),
+      exportBackgroundEnabled: readBool(
+        StorageKey.ExportBackgroundEnabled,
+        DEFAULT_CONFIG.exportBackgroundEnabled
+      ),
+      exportSearchEnginesEnabled: readBool(
+        StorageKey.ExportSearchEnginesEnabled,
+        DEFAULT_CONFIG.exportSearchEnginesEnabled
+      ),
+      exportShortCutsEnabled: readBool(
+        StorageKey.ExportShortCutsEnabled,
+        DEFAULT_CONFIG.exportShortCutsEnabled
       )
     };
   },
@@ -194,13 +283,13 @@ export const useConfigStore = defineStore('config', {
       this.backgroundImage = '';
       setItem(StorageKey.BackgroundImage, '');
     },
-    setTimeFormat24(value: boolean) {
-      this.timeFormat24 = Boolean(value);
-      setItem(StorageKey.TimeFormat24, this.timeFormat24);
+    setTimeFormat24Enabled(value: boolean) {
+      this.timeFormat24Enabled = Boolean(value);
+      setItem(StorageKey.TimeFormat24Enabled, this.timeFormat24Enabled);
     },
-    setTimeShowSeconds(value: boolean) {
-      this.timeShowSeconds = Boolean(value);
-      setItem(StorageKey.TimeShowSeconds, this.timeShowSeconds);
+    setTimeShowSecondsEnabled(value: boolean) {
+      this.timeShowSecondsEnabled = Boolean(value);
+      setItem(StorageKey.TimeShowSecondsEnabled, this.timeShowSecondsEnabled);
     },
     setTimeFontSize(value: string) {
       const v = ['small', 'medium', 'large'].includes(value) ? value : 'medium';
@@ -216,9 +305,9 @@ export const useConfigStore = defineStore('config', {
       this.timeFontStyle = v as ConfigState['timeFontStyle'];
       setItem(StorageKey.TimeFontStyle, this.timeFontStyle);
     },
-    setFocusSearchOnLoad(value: boolean) {
-      this.focusSearchOnLoad = Boolean(value);
-      setItem(StorageKey.FocusSearchOnLoad, this.focusSearchOnLoad);
+    setFocusSearchOnLoadEnabled(value: boolean) {
+      this.focusSearchOnLoadEnabled = Boolean(value);
+      setItem(StorageKey.FocusSearchOnLoadEnabled, this.focusSearchOnLoadEnabled);
     },
     setSearchHistoryEnabled(value: boolean) {
       this.searchHistoryEnabled = Boolean(value);
@@ -228,52 +317,72 @@ export const useConfigStore = defineStore('config', {
       this.searchSuggestEnabled = Boolean(value);
       setItem(StorageKey.SearchSuggestEnabled, this.searchSuggestEnabled);
     },
-    setOpenSearchInNewTab(value: boolean) {
-      this.openSearchInNewTab = Boolean(value);
-      setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
+    setOpenSearchInNewTabEnabled(value: boolean) {
+      this.openSearchInNewTabEnabled = Boolean(value);
+      setItem(StorageKey.OpenSearchInNewTabEnabled, this.openSearchInNewTabEnabled);
     },
-    setExportIncludeBackground(value: boolean) {
-      this.exportIncludeBackground = Boolean(value);
-      setItem(StorageKey.ExportIncludeBackground, this.exportIncludeBackground);
+    setExportBackgroundEnabled(value: boolean) {
+      this.exportBackgroundEnabled = Boolean(value);
+      setItem(StorageKey.ExportBackgroundEnabled, this.exportBackgroundEnabled);
+    },
+    setExportSearchEnginesEnabled(value: boolean) {
+      this.exportSearchEnginesEnabled = Boolean(value);
+      setItem(StorageKey.ExportSearchEnginesEnabled, this.exportSearchEnginesEnabled);
+    },
+    setExportShortCutsEnabled(value: boolean) {
+      this.exportShortCutsEnabled = Boolean(value);
+      setItem(StorageKey.ExportShortCutsEnabled, this.exportShortCutsEnabled);
     },
     /** 恢复所有配置为默认值并持久化 */
     resetToDefaults() {
       this.theme = DEFAULT_CONFIG.theme;
       this.backgroundImage = DEFAULT_CONFIG.backgroundImage;
-      this.timeFormat24 = DEFAULT_CONFIG.timeFormat24;
-      this.timeShowSeconds = DEFAULT_CONFIG.timeShowSeconds;
+      this.timeFormat24Enabled = DEFAULT_CONFIG.timeFormat24Enabled;
+      this.timeShowSecondsEnabled = DEFAULT_CONFIG.timeShowSecondsEnabled;
       this.timeFontSize = DEFAULT_CONFIG.timeFontSize;
       this.timeFontWeight = DEFAULT_CONFIG.timeFontWeight;
       this.timeFontStyle = DEFAULT_CONFIG.timeFontStyle;
-      this.focusSearchOnLoad = DEFAULT_CONFIG.focusSearchOnLoad;
+      this.focusSearchOnLoadEnabled = DEFAULT_CONFIG.focusSearchOnLoadEnabled;
       this.searchHistoryEnabled = DEFAULT_CONFIG.searchHistoryEnabled;
       this.searchSuggestEnabled = DEFAULT_CONFIG.searchSuggestEnabled;
-      this.openSearchInNewTab = DEFAULT_CONFIG.openSearchInNewTab;
-      this.exportIncludeBackground = DEFAULT_CONFIG.exportIncludeBackground;
+      this.openSearchInNewTabEnabled = DEFAULT_CONFIG.openSearchInNewTabEnabled;
+      this.exportBackgroundEnabled = DEFAULT_CONFIG.exportBackgroundEnabled;
+      this.exportSearchEnginesEnabled = DEFAULT_CONFIG.exportSearchEnginesEnabled;
+      this.exportShortCutsEnabled = DEFAULT_CONFIG.exportShortCutsEnabled;
       setItem(StorageKey.Theme, this.theme);
       setItem(StorageKey.BackgroundImage, this.backgroundImage);
-      setItem(StorageKey.TimeFormat24, this.timeFormat24);
-      setItem(StorageKey.TimeShowSeconds, this.timeShowSeconds);
+      setItem(StorageKey.TimeFormat24Enabled, this.timeFormat24Enabled);
+      setItem(StorageKey.TimeShowSecondsEnabled, this.timeShowSecondsEnabled);
       setItem(StorageKey.TimeFontSize, this.timeFontSize);
       setItem(StorageKey.TimeFontWeight, this.timeFontWeight);
       setItem(StorageKey.TimeFontStyle, this.timeFontStyle);
-      setItem(StorageKey.FocusSearchOnLoad, this.focusSearchOnLoad);
+      setItem(StorageKey.FocusSearchOnLoadEnabled, this.focusSearchOnLoadEnabled);
       setItem(StorageKey.SearchHistoryEnabled, this.searchHistoryEnabled);
       setItem(StorageKey.SearchSuggestEnabled, this.searchSuggestEnabled);
-      setItem(StorageKey.OpenSearchInNewTab, this.openSearchInNewTab);
-      setItem(StorageKey.ExportIncludeBackground, this.exportIncludeBackground);
+      setItem(StorageKey.OpenSearchInNewTabEnabled, this.openSearchInNewTabEnabled);
+      setItem(StorageKey.ExportBackgroundEnabled, this.exportBackgroundEnabled);
+      setItem(StorageKey.ExportSearchEnginesEnabled, this.exportSearchEnginesEnabled);
+      setItem(StorageKey.ExportShortCutsEnabled, this.exportShortCutsEnabled);
       setItem(StorageKey.HiddenEngineIds, '[]');
     },
     /** 导出配置为 JSON 对象（含 config、hiddenEngineIds、customEngines） */
     exportConfig(): ExportPayload {
       const configSnapshot = { ...this.$state };
-      if (!this.exportIncludeBackground) configSnapshot.backgroundImage = '';
-      return {
+      if (!this.exportBackgroundEnabled) configSnapshot.backgroundImage = '';
+      const payload: ExportPayload = {
         version: 1,
         config: configSnapshot,
         hiddenEngineIds: parseHiddenEngineIds(getItem(StorageKey.HiddenEngineIds)),
-        customEngines: parseCustomEngines(getItem(StorageKey.CustomEngines))
+        customEngines: []
       };
+      if (this.exportSearchEnginesEnabled) {
+        payload.customEngines = parseCustomEngines(getItem(StorageKey.CustomEngines));
+        payload.currentEngine = parseSelectedEngine(localStorage.getItem(StorageKey.SelectedEngine));
+      }
+      if (this.exportShortCutsEnabled) {
+        payload.shortcuts = parseShortcuts(getItem(StorageKey.Shortcuts));
+      }
+      return payload;
     },
     /** 导入配置；返回 true 表示成功，建议调用后刷新页面以使引擎等生效 */
     importConfig(data: unknown): boolean {
@@ -285,6 +394,8 @@ export const useConfigStore = defineStore('config', {
         d.config as Record<string, unknown> | undefined
       );
       persistImportedEngineData(d.hiddenEngineIds, d.customEngines);
+      persistImportedShortcuts(d.shortcuts);
+      persistImportedSelectedEngine(d.currentEngine);
       return true;
     }
   }

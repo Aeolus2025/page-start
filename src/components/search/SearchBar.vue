@@ -182,7 +182,7 @@ watch(showAnyDropdown, (visible) => {
 function onHistorySelect(keyword: string) {
   const url = buildSearchUrl(keyword);
   if (url) {
-    addHistory(keyword, { persistOnly: !config.openSearchInNewTab });
+    addHistory(keyword, { persistOnly: !config.openSearchInNewTabEnabled });
     navigateToSearchUrl(url);
   } else {
     query.value = keyword;
@@ -193,7 +193,7 @@ function onHistorySelect(keyword: string) {
 function onSuggestSelect(selected: string) {
   const url = buildSearchUrl(selected);
   if (url) {
-    addHistory(selected, { persistOnly: !config.openSearchInNewTab });
+    addHistory(selected, { persistOnly: !config.openSearchInNewTabEnabled });
     navigateToSearchUrl(url);
   } else {
     query.value = selected;
@@ -277,7 +277,7 @@ const handleSearch = () => {
   }
   const q = query.value.trim();
   if (!q) return;
-  addHistory(q, { persistOnly: !config.openSearchInNewTab });
+  addHistory(q, { persistOnly: !config.openSearchInNewTabEnabled });
   const url = buildSearchUrl(q);
   if (!url) return;
   navigateToSearchUrl(url);

@@ -78,4 +78,4 @@ npm run preview
 ## 配置与数据
 
 - **本地存储**：键均带前缀 `page-start-`，包括配置项、快捷方式、隐藏引擎 ID、自定义引擎、搜索历史等。
-- **导出文件**：JSON，含 `version`、`config`、`hiddenEngineIds`、`customEngines`；可选是否包含背景图 base64。
+- **导出文件**：JSON，含 `version`（当前为 1）、`config`、`hiddenEngineIds`，以及可选的 `customEngines` / `currentEngine`、`shortcuts`；可选是否包含背景图 base64。
