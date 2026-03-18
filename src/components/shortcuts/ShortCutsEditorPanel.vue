@@ -52,7 +52,8 @@
                   v-if="localForm.icon"
                   type="button"
                   class="add-icon-clear"
-                  @click="clearIconUpload"
+                  @pointerdown.prevent.stop
+                  @click.prevent.stop="clearIconUpload"
                 >
                   清除
                 </button>
@@ -241,7 +242,7 @@ function onCancel() {
   margin-bottom: 16px;
 }
 
-.add-field input {
+.add-field input:not([type='file']) {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--glass-input-border);
@@ -266,6 +267,7 @@ function onCancel() {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
 }
 
 .add-icon-input {
@@ -286,6 +288,7 @@ function onCancel() {
   cursor: pointer;
   overflow: hidden;
   position: relative;
+  z-index: 1;
   transition:
     border-color 0.2s,
     background 0.2s,
@@ -342,6 +345,9 @@ function onCancel() {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .add-icon-clear:hover {
