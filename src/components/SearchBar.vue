@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import SearchEnginePickerPanel from './search/SearchEnginePickerPanel.vue';
 import SearchEngineIcon from './search/SearchEngineIcon.vue';
 import SearchHistory from './search/SearchHistory.vue';
@@ -226,6 +226,13 @@ function onSuggestSelect(selected: string) {
 }
 
 function onInputKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation();
+    pickerVisible.value = false;
+    inputRef.value?.blur();
+    return;
+  }
   if (showSuggestDropdown.value && suggestions.value.length > 0) {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -270,6 +277,17 @@ function onInputKeydown(e: KeyboardEvent) {
   }
 }
 
+function focusInput() {
+  nextTick(() => inputRef.value?.focus());
+}
+
+function exitSearch() {
+  pickerVisible.value = false;
+  inputRef.value?.blur();
+}
+
+defineExpose({ focusInput, exitSearch });
+
 const onWrapperClick = (e: MouseEvent) => {
   if (!isFocused.value && !pickerVisible.value && e.target === wrapperRef.value) {
     inputRef.value?.focus();
@@ -285,6 +303,14 @@ const engineIconError = ref(false);
 const suggestSelectHandled = ref(false);
 watch(currentEngine, () => {
   engineIconError.value = false;
+});
+
+// 搜索栏真正失焦（退出搜索态）后清空输入内容
+watch(isFocused, (focused) => {
+  if (focused) return;
+  query.value = '';
+  historyHighlightIndex.value = -1;
+  suggestHighlightIndex.value = -1;
 });
 
 const focusSearchInput = () => {
@@ -311,6 +337,21 @@ const handleSearch = () => {
 
 onMounted(() => {
   if (props.shouldFocusOnMount) inputRef.value?.focus();
+});
+
+function onWindowFocus() {
+  // 若处于“搜索展开态”但因为窗口失焦导致 input 被 blur，则在回到窗口时恢复 focus
+  if (!isFocused.value) return;
+  if (document.activeElement === inputRef.value) return;
+  nextTick(() => inputRef.value?.focus());
+}
+
+onMounted(() => {
+  window.addEventListener('focus', onWindowFocus);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('focus', onWindowFocus);
 });
 </script>
 

@@ -18,9 +18,10 @@
 
     <ShortCutsEditorPanel
       v-if="editorVisible"
-      v-model:model-value="editorForm"
       v-model:visible="editorVisible"
+      :model-value="editorForm"
       :is-edit="Boolean(editingId)"
+      @update:model-value="(v) => Object.assign(editorForm, v)"
       @submit="handleEditorSubmit"
       @cancel="handleEditorCancel"
     />

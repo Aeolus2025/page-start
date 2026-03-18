@@ -14,6 +14,7 @@
       <div ref="contentBlockRef" class="content-block">
         <SearchBar
           v-if="!showShortcutPanel"
+          ref="searchBarRef"
           :should-focus-on-mount="focusSearchOnMount"
           :shortcut-panel-open="showShortcutPanel"
           @focus-change="handleFocusChange"
@@ -76,6 +77,8 @@ const settingsVisible = ref(false);
 const pickerOpen = ref(false);
 const shortcutEditorOpen = ref(false);
 
+const searchBarRef = ref<{ focusInput: () => void; exitSearch: () => void } | null>(null);
+
 const contentShifted = ref(false);
 function updateShifted() {
   contentShifted.value = searchFocused.value || showShortcutPanel.value || pickerOpen.value;
@@ -110,6 +113,18 @@ function openSettings() {
 }
 
 function onGlobalKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    // 未进入搜索态时按回车：聚焦搜索输入框
+    if (showShortcutPanel.value || settingsVisible.value) return;
+    if (pickerOpen.value) return;
+    if (searchFocused.value) return;
+    const ae = document.activeElement as HTMLElement | null;
+    if (ae && ae !== document.body && ae !== document.documentElement) return;
+    e.preventDefault();
+    searchBarRef.value?.focusInput();
+    return;
+  }
+
   if (e.key !== 'Escape') return;
   if (settingsVisible.value) {
     settingsVisible.value = false;

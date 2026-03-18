@@ -19,6 +19,8 @@ export function useSearchFocus(onFocusChange: (focused: boolean) => void) {
     blurTimeoutId = window.setTimeout(() => {
       blurTimeoutId = null;
       if (document.visibilityState === 'hidden') return;
+      // Windows 点击任务栏会导致窗口失焦并触发 input blur，这种情况不应收起搜索栏
+      if (!document.hasFocus()) return;
       isFocused.value = false;
       onFocusChange(false);
     }, 150);
