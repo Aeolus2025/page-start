@@ -32,7 +32,7 @@ function loadCustomEngines(): CustomSearchEngine[] {
   }));
 
   const needsWriteBack =
-    migrated.length !== list.length || migrated.some((e, i) => typeof list[i]?.id !== 'string');
+    migrated.length !== list.length || migrated.some((_, i) => typeof list[i]?.id !== 'string');
   if (needsWriteBack) setItem(StorageKey.CustomEngines, migrated);
   return migrated;
 }
