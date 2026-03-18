@@ -25,8 +25,19 @@ function shouldCacheResponse(resp) {
   return ct.startsWith('image/') || ct.includes('icon');
 }
 
+/** Cache Storage 仅支持 http/https；扩展内图片等会走 chrome-extension:，put 会抛错。 */
+function isCacheableRequestUrl(urlString) {
+  try {
+    const p = new URL(urlString).protocol;
+    return p === 'http:' || p === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function shouldHandle(req) {
   if (req.method !== 'GET') return false;
+  if (!isCacheableRequestUrl(req.url)) return false;
   const url = new URL(req.url);
   const isFavicon =
     url.pathname.endsWith('/favicon.ico') || url.pathname.toLowerCase().includes('favicon');
@@ -66,11 +77,18 @@ self.addEventListener('fetch', (event) => {
         const resp = await fetch(req, { signal: controller.signal });
         clearTimeout(tid);
         const reqUrl = normalizeUrl(req.url);
-        if (shouldCacheResponse(resp)) {
-          void cache.put(req, resp.clone());
-        } else if (resp && resp.type === 'opaque' && reqUrl && approvedOpaqueUrls.has(reqUrl)) {
-          void cache.put(req, resp.clone());
-        }
+        const tryPut = async () => {
+          try {
+            if (shouldCacheResponse(resp)) {
+              await cache.put(req, resp.clone());
+            } else if (resp && resp.type === 'opaque' && reqUrl && approvedOpaqueUrls.has(reqUrl)) {
+              await cache.put(req, resp.clone());
+            }
+          } catch {
+            // 非 http(s) 或其它限制下 put 失败时忽略，避免扩展页报错
+          }
+        };
+        void tryPut();
         return resp;
       } catch (e) {
         // 断网时尽量回退到缓存（即便上面没命中也不抛出）

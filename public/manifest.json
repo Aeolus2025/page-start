@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Page Start",
-  "version": "1.0.1",
-  "description": "一个简洁的Vue导航起始页",
+  "version": "1.0.2",
+  "description": "一个简洁的导航起始页",
   "chrome_url_overrides": {
-    "newtab": "index.html"
+    "newtab": "newtab.html"
   },
   "permissions": ["storage"],
   "icons": {

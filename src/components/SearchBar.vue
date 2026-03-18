@@ -313,6 +313,34 @@ watch(isFocused, (focused) => {
   suggestHighlightIndex.value = -1;
 });
 
+function shouldAutoFocusNow() {
+  if (!props.shouldFocusOnMount) return false;
+  if (props.shortcutPanelOpen) return false;
+  if (document.visibilityState !== 'visible') return false;
+  if (!document.hasFocus()) return false;
+  const ae = document.activeElement as HTMLElement | null;
+  // 已在搜索框则无需处理
+  if (ae === inputRef.value) return false;
+  // 若用户正在输入其它控件，不抢焦点
+  if (ae && ['INPUT', 'TEXTAREA', 'SELECT'].includes(ae.tagName)) return false;
+  return true;
+}
+
+function tryAutoFocus() {
+  if (!shouldAutoFocusNow()) return;
+  const el = inputRef.value;
+  if (!el) return;
+  // 短窗口重试，避免新标签打开时地址栏抢焦点导致第一次 focus 失效
+  requestAnimationFrame(() => {
+    if (!shouldAutoFocusNow()) return;
+    el.focus({ preventScroll: true });
+    setTimeout(() => {
+      if (!shouldAutoFocusNow()) return;
+      el.focus({ preventScroll: true });
+    }, 50);
+  });
+}
+
 const focusSearchInput = () => {
   nextTick(() => inputRef.value?.focus());
 };
@@ -336,7 +364,7 @@ const handleSearch = () => {
 };
 
 onMounted(() => {
-  if (props.shouldFocusOnMount) inputRef.value?.focus();
+  tryAutoFocus();
 });
 
 function onWindowFocus() {
@@ -352,6 +380,24 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('focus', onWindowFocus);
+});
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') tryAutoFocus();
+}
+
+function onPageShow() {
+  tryAutoFocus();
+}
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pageshow', onPageShow);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  window.removeEventListener('pageshow', onPageShow);
 });
 </script>
 
