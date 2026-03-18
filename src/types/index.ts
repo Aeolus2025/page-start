@@ -7,6 +7,13 @@ export interface SearchEngine {
   iconUrl?: string;
 }
 
+/** 自定义搜索引擎（持久化存储结构，需要稳定 id） */
+export interface CustomSearchEngine {
+  id: string;
+  name: string;
+  url: string;
+}
+
 /** 校验结果 */
 export interface ValidateResult {
   valid: boolean;
@@ -18,7 +25,7 @@ export interface ExportPayload {
   version: number;
   config: ConfigState;
   hiddenEngineIds: string[];
-  customEngines: { name: string; url: string }[];
+  customEngines: CustomSearchEngine[] | { name: string; url: string }[];
   /** 快捷方式列表 */
   shortcuts?: ShortcutItem[];
   /** 当前选中的搜索引擎（用于恢复用户的默认引擎） */
@@ -66,6 +73,11 @@ export interface ShortcutItem {
   url: string;
   /** 展示用，如 emoji 或单字符 */
   icon: string;
+  /**
+   * 是否禁用“根据链接自动推导 favicon”。
+   * 为 true 时，即使有 url 也不会再自动生成 favicon.ico（清除图标时会置为 true）。
+   */
+  disableAutoIcon?: boolean;
 }
 
 /** localStorage 使用到的键（不含全局前缀） */
@@ -88,5 +100,5 @@ export enum StorageKey {
   CustomEngines = 'custom-engines',
   Shortcuts = 'shortcuts',
   SearchHistory = 'searchHistory',
-  SelectedEngine = 'selectedEngine'
+  SelectedEngine = 'selectedEngine',
 }

@@ -1,10 +1,5 @@
 <template>
-  <a
-    class="card card-link"
-    :href="item.url"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
+  <a class="card card-link" :href="item.url" target="_blank" rel="noopener noreferrer">
     <div class="card-actions">
       <button
         type="button"
@@ -27,11 +22,11 @@
     </div>
 
     <div class="card-icon-wrap card-icon-letter-wrap">
-      <span class="card-icon-letter">{{ firstLetter }}</span>
+      <span v-show="showFallbackText" class="card-icon-letter">{{ fallbackText }}</span>
       <img
         v-if="iconUrl"
-        v-show="showImg && !iconError"
         class="card-icon-img"
+        :class="{ 'is-visible': showImg && !iconError }"
         :src="iconUrl"
         :alt="item.name"
         loading="lazy"
@@ -59,9 +54,18 @@ const emit = defineEmits<{
   (e: 'remove', id: string): void;
 }>();
 
-const rawIconUrl = computed(() => (isIconUrl(props.item.icon) ? props.item.icon : ''));
+const rawIconUrl = computed(() =>
+  !props.item.disableAutoIcon && isIconUrl(props.item.icon) ? props.item.icon : '',
+);
 const { iconUrl, showImg, iconError, handleImgLoad, handleImgError } = useProbedIconUrl(rawIconUrl);
-const firstLetter = computed(() => getFirstLetter(props.item.name));
+
+const fallbackText = computed(() => {
+  const icon = (props.item.icon || '').trim();
+  if (!isIconUrl(icon) && icon) return icon;
+  return getFirstLetter(props.item.name);
+});
+
+const showFallbackText = computed(() => !(iconUrl.value && showImg.value && !iconError.value));
 </script>
 
 <style scoped>
@@ -80,7 +84,11 @@ const firstLetter = computed(() => getFirstLetter(props.item.name));
   text-shadow: none;
   box-shadow: none;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-normal);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-normal);
   text-decoration: none;
   box-sizing: border-box;
   position: relative;
@@ -134,7 +142,9 @@ button.card {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .card-edit {
@@ -170,9 +180,7 @@ button.card {
   margin-bottom: 4px;
   border-radius: 10px;
   background: var(--glass-bg-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   overflow: hidden;
 }
 
@@ -180,6 +188,15 @@ button.card {
   width: 28px;
   height: 28px;
   object-fit: contain;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.card .card-icon-img.is-visible {
+  opacity: 1;
 }
 
 .card-icon-letter-wrap {
@@ -191,6 +208,10 @@ button.card {
 
 .card-icon-letter {
   user-select: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .card p {

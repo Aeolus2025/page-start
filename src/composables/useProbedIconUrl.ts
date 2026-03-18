@@ -1,11 +1,11 @@
 import type { ComputedRef, Ref } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
 
-const PROBE_TIMEOUT_MS = 4000;
 const LOAD_TIMEOUT_MS = 3000;
 
 /**
- * 先用 fetch 探测图标 URL（短超时），仅探测成功时再设置 img.src，避免长时间挂起请求与控制台 ERR_TIMED_OUT。
+ * 仅负责：设置 img.src + 监听 load/error + 超时兜底。
+ * 真实的“跨域图标缓存”由 Service Worker + Cache Storage 完成（可缓存 opaque response，不依赖 CORS）。
  * 返回 iconUrl、showImg、iconError 及 img 的 @load/@error 处理函数。
  */
 export function useProbedIconUrl(
@@ -24,24 +24,6 @@ export function useProbedIconUrl(
     }
   }
 
-  async function probe(url: string) {
-    iconUrl.value = '';
-    if (!url) return;
-    try {
-      const controller = new AbortController();
-      const id = window.setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
-      await fetch(url, {
-        method: 'HEAD',
-        mode: 'no-cors',
-        signal: controller.signal,
-      });
-      clearTimeout(id);
-      iconUrl.value = url;
-    } catch {
-      iconUrl.value = '';
-    }
-  }
-
   watch(
     rawIconUrl,
     (url) => {
@@ -50,7 +32,8 @@ export function useProbedIconUrl(
       iconError.value = false;
       clearLoadTimer();
       if (!url) return;
-      probe(url);
+      // 直接交给 <img> 去加载；SW 会负责命中本地缓存，避免重复联网
+      iconUrl.value = url;
     },
     { immediate: true },
   );
@@ -70,6 +53,15 @@ export function useProbedIconUrl(
   function handleImgLoad() {
     showImg.value = true;
     clearLoadTimer();
+    // 通知 SW：该图标已确认加载成功，可安全缓存（用于跨域 opaque 响应的缓存判定）
+    try {
+      const url = iconUrl.value;
+      if (url && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'ICON_LOADED', url });
+      }
+    } catch {
+      // ignore
+    }
   }
 
   function handleImgError() {

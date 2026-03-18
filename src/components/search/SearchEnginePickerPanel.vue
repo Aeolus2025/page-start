@@ -125,7 +125,7 @@ const emit = defineEmits<{
 
 const allEngines = computed(() => [
   ...DEFAULT_ENGINES.filter((e) => !hiddenEngineIds.value.includes(e.id)),
-  ...customEngines.value.map((e, i) => ({ ...e, id: 'custom-' + i })),
+  ...customEngines.value,
 ]);
 const currentEngine = computed(() => props.modelValue);
 const showAddForm = ref(false);
@@ -144,11 +144,7 @@ const close = () => {
 };
 
 const select = (eng: SearchEngine) => {
-  if (eng.id && eng.id.startsWith('custom-')) {
-    emit('update:modelValue', { id: eng.id, name: eng.name, url: eng.url, icon: eng.icon });
-  } else {
-    emit('update:modelValue', { ...eng });
-  }
+  emit('update:modelValue', { ...eng });
   close();
   emit('after-select');
 };
@@ -160,9 +156,8 @@ function onAddEngine(payload: { name: string; url: string }) {
 
 function removeEngine(eng: SearchEngine, e: Event) {
   e.stopPropagation();
-  if (eng.id.startsWith('custom-')) {
-    const idx = customEngines.value.findIndex((c) => c.name === eng.name && c.url === eng.url);
-    if (idx >= 0) store.removeCustomEngineAt(idx);
+  if (eng.id.startsWith('ce-')) {
+    store.removeCustomEngineById(eng.id);
   } else {
     store.setHiddenIds([...hiddenEngineIds.value, eng.id]);
   }

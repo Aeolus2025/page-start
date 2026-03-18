@@ -6,10 +6,10 @@
     <span v-show="showFallbackLetter" class="engine-icon-fallback-letter">{{ fallback }}</span>
     <img
       v-if="iconUrl"
-      v-show="showImg && !probedIconError"
       :src="iconUrl"
       :alt="engine?.name"
       class="engine-icon engine-icon-img"
+      :class="{ 'is-visible': showImg && !probedIconError }"
       @load="handleImgLoad"
       @error="handleImgError"
     />
@@ -87,6 +87,15 @@ const showFallbackLetter = computed(
   border-radius: 4px;
   object-fit: contain;
   filter: grayscale(100%) brightness(0.35) contrast(1.4);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.engine-icon-img.is-visible {
+  opacity: 1;
 }
 .engine-icon-fallback {
   display: flex;
@@ -98,6 +107,10 @@ const showFallbackLetter = computed(
   font-size: 14px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.82);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 .size-medium.engine-icon {
   width: 28px;

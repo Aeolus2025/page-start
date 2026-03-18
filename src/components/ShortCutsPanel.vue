@@ -46,10 +46,11 @@ const editorVisible = ref(false);
 watch(editorVisible, (open) => {
   emit('editor-open-change', open);
 });
-const editorForm = reactive<{ name: string; url: string; icon: string }>({
+const editorForm = reactive<{ name: string; url: string; icon: string; disableAutoIcon: boolean }>({
   name: '',
   url: '',
   icon: '',
+  disableAutoIcon: false,
 });
 
 function openAdd() {
@@ -57,6 +58,7 @@ function openAdd() {
   editorForm.name = '';
   editorForm.url = '';
   editorForm.icon = '';
+  editorForm.disableAutoIcon = false;
   emit('editor-open-change', true);
   editorVisible.value = true;
 }
@@ -66,6 +68,7 @@ function openEdit(item: ShortcutItem) {
   editorForm.name = item.name;
   editorForm.url = item.url;
   editorForm.icon = item.icon;
+  editorForm.disableAutoIcon = Boolean(item.disableAutoIcon);
   emit('editor-open-change', true);
   editorVisible.value = true;
 }
@@ -74,13 +77,19 @@ function removeItem(id: string) {
   shortcuts.remove(id);
 }
 
-function handleEditorSubmit(payload: { name: string; url: string; icon: string }) {
+function handleEditorSubmit(payload: {
+  name: string;
+  url: string;
+  icon: string;
+  disableAutoIcon: boolean;
+}) {
   const isEdit = Boolean(editingId.value);
   try {
     if (isEdit && editingId.value) {
       shortcuts.update(editingId.value, payload);
     } else {
-      shortcuts.add(payload);
+      // 新建快捷方式不继承“禁用自动 favicon”的状态，避免清除操作影响后续新增
+      shortcuts.add({ ...payload, disableAutoIcon: false });
     }
     editorVisible.value = false;
     editingId.value = null;

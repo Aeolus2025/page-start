@@ -7,6 +7,8 @@ import { getJsonArray, setItem } from '@/utils/storage';
 import type { ShortcutItem } from '@/types';
 import { StorageKey } from '@/types';
 import { isShortcutItem } from '@/types/guards';
+import { isIconUrl } from '@/utils/checkUrl';
+import { deleteCachedIcon } from '@/utils/iconCache';
 
 function loadShortcuts(): ShortcutItem[] {
   return getJsonArray(StorageKey.Shortcuts, isShortcutItem);
@@ -23,7 +25,7 @@ function genId(): string {
 export const useShortcutsStore = defineStore('shortcuts', {
   state() {
     return {
-      items: loadShortcuts()
+      items: loadShortcuts(),
     };
   },
   actions: {
@@ -34,8 +36,15 @@ export const useShortcutsStore = defineStore('shortcuts', {
       return full;
     },
     remove(id: string) {
+      const removed = this.items.find((x) => x.id === id);
       this.items = this.items.filter((x) => x.id !== id);
       saveShortcuts(this.items);
+
+      // 删除快捷方式时同步清理已缓存的远程图标（主要是自动 favicon）
+      const icon = (removed?.icon || '').trim();
+      if (icon && isIconUrl(icon) && !icon.startsWith('data:')) {
+        void deleteCachedIcon(icon);
+      }
     },
     update(id: string, patch: Partial<Omit<ShortcutItem, 'id'>>) {
       const idx = this.items.findIndex((x) => x.id === id);
@@ -57,9 +66,11 @@ export const useShortcutsStore = defineStore('shortcuts', {
           typeof x.id === 'string' &&
           typeof x.name === 'string' &&
           typeof x.url === 'string' &&
-          typeof x.icon === 'string'
+          typeof x.icon === 'string' &&
+          ((x as ShortcutItem).disableAutoIcon === undefined ||
+            typeof (x as ShortcutItem).disableAutoIcon === 'boolean'),
       );
       saveShortcuts(this.items);
-    }
-  }
+    },
+  },
 });

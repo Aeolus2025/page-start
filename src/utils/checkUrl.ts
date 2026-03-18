@@ -60,14 +60,27 @@ export function ensureAbsoluteUrl(url: string): string {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
+/**
+ * 校验快捷方式链接格式：必须是完整的 http/https URL（必须以 http:// 或 https:// 开头）。
+ */
+export function validateShortcutUrl(url: string): ValidateResult {
+  const trimmed = (url || '').trim();
+  if (!trimmed) return { valid: false, message: '请填写链接' };
+  // 必须显式以 http(s):// 开头
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return { valid: false, message: '请输入正确的链接（必须以 http:// 或 https:// 开头）' };
+  }
+  const u = parseHttpUrl(trimmed);
+  if (!u) return { valid: false, message: '请输入正确的链接（URL 格式不合法）' };
+  // hostname 不能为空；并避免形如 https://hh: 这种异常 host（部分环境可能被解析成空端口）
+  if (!u.hostname) return { valid: false, message: '请输入正确的链接（缺少域名）' };
+  if (u.host.endsWith(':')) return { valid: false, message: '请输入正确的链接（端口格式不正确）' };
+  return { valid: true };
+}
+
 /** 判断是否为可当作图片 URL 使用的字符串（http/https/data） */
 export function isIconUrl(icon: string): boolean {
   return Boolean(
-    icon &&
-      (icon.startsWith('http://') ||
-        icon.startsWith('https://') ||
-        icon.startsWith('data:'))
+    icon && (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')),
   );
 }
-
-

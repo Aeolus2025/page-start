@@ -1,12 +1,13 @@
 import type { ShortcutItem } from './index';
 
 export function isShortcutItem(x: unknown): x is ShortcutItem {
+  const v = x as ShortcutItem;
   return (
     !!x &&
-    typeof (x as ShortcutItem).id === 'string' &&
-    typeof (x as ShortcutItem).name === 'string' &&
-    typeof (x as ShortcutItem).url === 'string' &&
-    typeof (x as ShortcutItem).icon === 'string'
+    typeof v.id === 'string' &&
+    typeof v.name === 'string' &&
+    typeof v.url === 'string' &&
+    typeof v.icon === 'string' &&
+    (v.disableAutoIcon === undefined || typeof v.disableAutoIcon === 'boolean')
   );
 }
-

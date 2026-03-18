@@ -5,8 +5,9 @@
 import { defineStore } from 'pinia';
 import { getItem, getJsonArray, setItem } from '@/utils/storage';
 import { DEFAULT_ENGINES } from '@/constants/engines';
-import type { SearchEngine } from '@/types';
+import type { CustomSearchEngine, SearchEngine } from '@/types';
 import { StorageKey } from '@/types';
+import { genUniqueId } from '@/utils/id';
 
 const LEGACY_SELECTED_ENGINE_KEY = 'page-start-selected-engine';
 
@@ -14,10 +15,26 @@ function loadHiddenIds(): string[] {
   return getJsonArray(StorageKey.HiddenEngineIds, (x): x is string => typeof x === 'string');
 }
 
-function loadCustomEngines(): { name: string; url: string }[] {
-  return getJsonArray(StorageKey.CustomEngines, (x): x is { name: string; url: string } =>
-    Boolean(x && typeof (x as { name?: unknown }).name === 'string' && typeof (x as { url?: unknown }).url === 'string')
-  );
+function isCustomEngineLike(x: unknown): x is { id?: unknown; name: string; url: string } {
+  if (!x || typeof x !== 'object') return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.name === 'string' && typeof o.url === 'string';
+}
+
+function loadCustomEngines(): CustomSearchEngine[] {
+  const raw = getJsonArray(StorageKey.CustomEngines, (x): x is unknown => Boolean(x));
+  const list = raw.filter(isCustomEngineLike);
+
+  const migrated: CustomSearchEngine[] = list.map((x) => ({
+    id: typeof x.id === 'string' && x.id.trim() ? x.id : genUniqueId('ce-'),
+    name: String(x.name),
+    url: String(x.url),
+  }));
+
+  const needsWriteBack =
+    migrated.length !== list.length || migrated.some((e, i) => typeof list[i]?.id !== 'string');
+  if (needsWriteBack) setItem(StorageKey.CustomEngines, migrated);
+  return migrated;
 }
 
 function loadSelectedEngine(): SearchEngine {
@@ -30,9 +47,28 @@ function loadSelectedEngine(): SearchEngine {
     if (!raw) return DEFAULT_ENGINES[0];
     const o = JSON.parse(raw) as { id?: string; name?: string; url?: string };
     const found =
-      DEFAULT_ENGINES.find((e) => e.id === o?.id) || DEFAULT_ENGINES.find((e) => e.name === o?.name);
+      DEFAULT_ENGINES.find((e) => e.id === o?.id) ||
+      DEFAULT_ENGINES.find((e) => e.name === o?.name);
     if (found) return found;
-    if (o?.name && o?.url) return { id: 'custom', name: o.name, url: o.url };
+    const customs = loadCustomEngines();
+    // 自定义：优先按稳定 id 匹配
+    if (o?.id) {
+      const byId = customs.find((c) => c.id === o.id);
+      if (byId) return { id: byId.id, name: byId.name, url: byId.url };
+    }
+    // 兼容旧数据：按 name/url 回退，并回写稳定 id
+    if (o?.name && o?.url) {
+      const byTuple = customs.find((c) => c.name === o.name && c.url === o.url);
+      if (byTuple) {
+        setItem(StorageKey.SelectedEngine, {
+          id: byTuple.id,
+          name: byTuple.name,
+          url: byTuple.url,
+        });
+        return { id: byTuple.id, name: byTuple.name, url: byTuple.url };
+      }
+      return { id: 'custom', name: o.name, url: o.url };
+    }
     return DEFAULT_ENGINES[0];
   } catch {
     return DEFAULT_ENGINES[0];
@@ -41,7 +77,7 @@ function loadSelectedEngine(): SearchEngine {
 
 interface SearchEnginesExport {
   hiddenEngineIds: string[];
-  customEngines: { name: string; url: string }[];
+  customEngines: CustomSearchEngine[];
   currentEngine?: { id?: string; name?: string; url?: string };
 }
 
@@ -50,7 +86,7 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
     return {
       hiddenEngineIds: loadHiddenIds(),
       customEngines: loadCustomEngines(),
-      selectedEngine: loadSelectedEngine()
+      selectedEngine: loadSelectedEngine(),
     };
   },
   actions: {
@@ -58,18 +94,40 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
       this.hiddenEngineIds = ids;
       setItem(StorageKey.HiddenEngineIds, ids);
     },
-    setCustomEngines(list: { name: string; url: string }[]) {
+    setCustomEngines(list: CustomSearchEngine[]) {
       this.customEngines = list;
       setItem(StorageKey.CustomEngines, list);
     },
     addCustomEngine(engine: { name: string; url: string }) {
-      this.customEngines = [...this.customEngines, engine];
+      const full: CustomSearchEngine = { id: genUniqueId('ce-'), ...engine };
+      this.customEngines = [...this.customEngines, full];
       setItem(StorageKey.CustomEngines, this.customEngines);
     },
     removeCustomEngineAt(index: number) {
       if (index < 0 || index >= this.customEngines.length) return;
+      const removed = this.customEngines[index];
       this.customEngines = this.customEngines.filter((_, i) => i !== index);
       setItem(StorageKey.CustomEngines, this.customEngines);
+
+      // 若删除的是当前选中引擎，则自动切回第一个默认引擎
+      const first = DEFAULT_ENGINES[0];
+      if (removed && this.selectedEngine?.id === removed.id && first) {
+        this.setSelectedEngine(first);
+      }
+    },
+    removeCustomEngineById(id: string) {
+      if (!id) return;
+      const removed = this.customEngines.find((e) => e.id === id);
+      const next = this.customEngines.filter((e) => e.id !== id);
+      if (next.length === this.customEngines.length) return;
+      this.customEngines = next;
+      setItem(StorageKey.CustomEngines, this.customEngines);
+
+      // 若删除的是当前选中引擎，则自动切回第一个默认引擎
+      const first = DEFAULT_ENGINES[0];
+      if (removed && this.selectedEngine?.id === removed.id && first) {
+        this.setSelectedEngine(first);
+      }
     },
     setSelectedEngine(engine: SearchEngine | null | undefined) {
       if (!engine) return;
@@ -95,8 +153,8 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
         currentEngine: {
           id: this.selectedEngine?.id,
           name: this.selectedEngine?.name,
-          url: this.selectedEngine?.url
-        }
+          url: this.selectedEngine?.url,
+        },
       };
     },
     /** 导入用：应用引擎相关数据并持久化 */
@@ -110,9 +168,10 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
         this.setHiddenIds(ids);
       }
       if (Array.isArray(data.customEngines)) {
-        const list = data.customEngines.filter(
-          (x) => x && typeof x.name === 'string' && typeof x.url === 'string'
-        );
+        const list = data.customEngines.filter(isCustomEngineLike).map((x) => {
+          const id = typeof x.id === 'string' && x.id.trim() ? x.id : genUniqueId('ce-');
+          return { id, name: x.name, url: x.url } satisfies CustomSearchEngine;
+        });
         this.setCustomEngines(list);
       }
       const sel = data.currentEngine;
@@ -121,14 +180,13 @@ export const useSearchEnginesStore = defineStore('searchEngines', {
         const payload = {
           id: typeof s.id === 'string' ? s.id : undefined,
           name: typeof s.name === 'string' ? s.name : undefined,
-          url: typeof s.url === 'string' ? s.url : undefined
+          url: typeof s.url === 'string' ? s.url : undefined,
         };
         if (payload.id || payload.name || payload.url) {
           setItem(StorageKey.SelectedEngine, payload);
           this.selectedEngine = loadSelectedEngine();
         }
       }
-    }
-  }
+    },
+  },
 });
-

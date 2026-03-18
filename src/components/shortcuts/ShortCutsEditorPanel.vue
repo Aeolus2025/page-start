@@ -37,7 +37,12 @@
                   @change="onIconFileChange"
                 />
                 <label for="shortcut-icon-file" class="add-icon-label">
-                  <img v-if="localForm.icon" :src="localForm.icon" class="add-icon-preview" alt="" />
+                  <img
+                    v-if="isIconUrl(localForm.icon)"
+                    :src="localForm.icon"
+                    class="add-icon-preview"
+                    alt=""
+                  />
                   <span v-else class="add-icon-placeholder" aria-hidden="true">
                     <i class="iconfont icon-yunshangchuan add-icon-placeholder-icon"></i>
                     <span class="add-icon-placeholder-text">上传</span>
@@ -67,23 +72,28 @@
 
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
-import { ensureAbsoluteUrl } from '@/utils/checkUrl';
-import { getFaviconFromUrl, getFirstLetter } from '@/utils/getIcon';
+import { ensureAbsoluteUrl, isIconUrl, validateShortcutUrl } from '@/utils/checkUrl';
+import { getFaviconFromUrl } from '@/utils/getIcon';
+import { deleteCachedIcon } from '@/utils/iconCache';
 
 interface ShortcutFormValue {
   name: string;
   url: string;
   icon: string;
+  disableAutoIcon: boolean;
 }
 
-const props = withDefaults(defineProps<{
-  modelValue: ShortcutFormValue;
-  visible?: boolean;
-  isEdit?: boolean;
-}>(), {
-  visible: false,
-  isEdit: false,
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: ShortcutFormValue;
+    visible?: boolean;
+    isEdit?: boolean;
+  }>(),
+  {
+    visible: false,
+    isEdit: false,
+  },
+);
 
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void;
@@ -96,6 +106,7 @@ const localForm = reactive<ShortcutFormValue>({
   name: props.modelValue.name,
   url: props.modelValue.url,
   icon: props.modelValue.icon,
+  disableAutoIcon: props.modelValue.disableAutoIcon,
 });
 
 const error = ref('');
@@ -106,9 +117,10 @@ watch(
     localForm.name = val.name;
     localForm.url = val.url;
     localForm.icon = val.icon;
+    localForm.disableAutoIcon = val.disableAutoIcon;
     error.value = '';
   },
-  { deep: true }
+  { deep: true },
 );
 
 watch(
@@ -118,7 +130,7 @@ watch(
     if (!visible) {
       error.value = '';
     }
-  }
+  },
 );
 
 function onIconFileChange(e: Event) {
@@ -129,14 +141,32 @@ function onIconFileChange(e: Event) {
   const reader = new FileReader();
   reader.onload = () => {
     localForm.icon = reader.result as string;
+    localForm.disableAutoIcon = false;
     emit('update:modelValue', { ...localForm });
   };
   reader.readAsDataURL(file);
 }
 
 function clearIconUpload() {
+  const prevIcon = localForm.icon.trim();
+  const href = ensureAbsoluteUrl(localForm.url.trim());
+  const favicon = getFaviconFromUrl(href);
+
   localForm.icon = '';
+
+  // “清除”只在当前卡片按语义生效：
+  // - 如果当前图标就是自动 favicon：清除 => 禁用本卡自动 favicon
+  // - 如果当前图标是用户上传(data:)或手填字符：清除 => 仅移除上传/手填，回退到自动 favicon（不禁用）
+  if (favicon && prevIcon === favicon) {
+    localForm.disableAutoIcon = true;
+  } else {
+    localForm.disableAutoIcon = false;
+  }
+
   emit('update:modelValue', { ...localForm });
+
+  // 清理“默认 favicon”的本地缓存，避免刷新后立即又从缓存恢复旧图标
+  if (favicon) void deleteCachedIcon(favicon);
 }
 
 function handleSubmit() {
@@ -147,10 +177,19 @@ function handleSubmit() {
     error.value = '请填写名称和链接';
     return;
   }
-  const href = ensureAbsoluteUrl(url);
-  const icon = localForm.icon.trim() || getFaviconFromUrl(href);
-  const iconVal = icon || getFirstLetter(name);
-  emit('submit', { name, url: href, icon: iconVal });
+  const urlCheck = validateShortcutUrl(url);
+  if (!urlCheck.valid) {
+    error.value = urlCheck.message ?? '链接格式不正确';
+    return;
+  }
+  const href = url;
+  const uploadedIcon = localForm.icon.trim();
+  const iconVal = uploadedIcon
+    ? uploadedIcon
+    : localForm.disableAutoIcon
+      ? ''
+      : getFaviconFromUrl(href);
+  emit('submit', { name, url: href, icon: iconVal, disableAutoIcon: localForm.disableAutoIcon });
 }
 
 function onCancel() {
@@ -217,8 +256,8 @@ function onCancel() {
   color: var(--color-input-placeholder);
 }
 
-.add-field input[type="text"]:focus,
-.add-field input[type="url"]:focus {
+.add-field input[type='text']:focus,
+.add-field input[type='url']:focus {
   outline: none;
   border-color: var(--glass-border-strong);
 }
@@ -247,7 +286,10 @@ function onCancel() {
   cursor: pointer;
   overflow: hidden;
   position: relative;
-  transition: border-color 0.2s, background 0.2s, transform var(--transition-fast);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform var(--transition-fast);
 }
 
 .add-icon-label:hover {
@@ -327,7 +369,9 @@ function onCancel() {
   font-size: 14px;
   cursor: pointer;
   border: none;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .btn-cancel {
@@ -348,10 +392,10 @@ function onCancel() {
   background: rgba(67, 56, 202, 1);
 }
 
-[data-theme="dark"] .add-backdrop {
+[data-theme='dark'] .add-backdrop {
   background: rgba(0, 0, 0, 0.28);
 }
-[data-theme="dark"] .add-modal {
+[data-theme='dark'] .add-modal {
   background: rgba(60, 60, 60, 0.96);
   border: 1px solid rgba(248, 250, 252, 0.22);
   box-shadow: none;
@@ -360,10 +404,10 @@ function onCancel() {
   -webkit-backdrop-filter: blur(20px);
 }
 @media (prefers-color-scheme: dark) {
-  [data-theme="system"] .add-backdrop {
+  [data-theme='system'] .add-backdrop {
     background: rgba(0, 0, 0, 0.28);
   }
-  [data-theme="system"] .add-modal {
+  [data-theme='system'] .add-modal {
     background: rgba(60, 60, 60, 0.96);
     border: 1px solid rgba(248, 250, 252, 0.22);
     box-shadow: none;
