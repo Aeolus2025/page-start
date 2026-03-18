@@ -42,3 +42,6 @@ coverage/
 .nyc_output/
 .turbo/
 .cache/
+
+# TypeScript 增量编译缓存
+*.tsbuildinfo
