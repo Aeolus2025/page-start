@@ -4,8 +4,8 @@
     <input
       v-model="url"
       type="text"
-      placeholder="搜索URL,需填完整地址(含%s)(如 https://www.google.com/search?q=%s)"
-      class="add-input add-url"
+      placeholder="搜索URL,需填完整地址(含%s,如 https://www.google.com/search?q=%s)"
+      class="add-input"
       :class="{ 'add-input-error': addError }"
       @input="addError = ''"
     />
@@ -23,19 +23,25 @@ import { validateSearchEngineUrl, normalizeSearchEngineUrl } from '@/utils/check
 
 const props = withDefaults(defineProps<{ visible?: boolean }>(), { visible: false });
 
-const emit = defineEmits<{ (e: 'close'): void; (e: 'add', payload: { name: string; url: string }): void }>();
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'add', payload: { name: string; url: string }): void;
+}>();
 
 const name = ref('');
 const url = ref('');
 const addError = ref('');
 
-watch(() => props.visible, (visible) => {
-  if (!visible) {
-    name.value = '';
-    url.value = '';
-    addError.value = '';
-  }
-});
+watch(
+  () => props.visible,
+  (visible) => {
+    if (!visible) {
+      name.value = '';
+      url.value = '';
+      addError.value = '';
+    }
+  },
+);
 
 function cancel() {
   emit('close');
@@ -77,7 +83,7 @@ function confirm() {
   padding: 8px 12px;
   margin-bottom: 6px;
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   font-size: 14px;
   box-sizing: border-box;
   min-width: 0;
@@ -92,9 +98,23 @@ function confirm() {
   color: rgba(0, 0, 0, 0.65);
   line-height: 1.4;
 }
-.add-url { font-family: monospace; }
-.add-actions { display: flex; gap: 8px; justify-content: flex-end; }
-.add-btn { padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; }
-.add-btn.cancel { background: rgba(0,0,0,0.08); }
-.add-btn.confirm { background: rgba(0,0,0,0.2); color: rgba(255, 255, 255, 1); }
+.add-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.add-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+.add-btn.cancel {
+  background: rgba(0, 0, 0, 0.08);
+}
+.add-btn.confirm {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
 </style>

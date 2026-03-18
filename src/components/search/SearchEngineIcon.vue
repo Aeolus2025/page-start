@@ -3,7 +3,7 @@
     <use :href="`#${iconfontId}`" />
   </svg>
   <span v-else class="engine-icon engine-icon-fallback" :class="sizeClass">
-    <span class="engine-icon-fallback-letter">{{ fallback }}</span>
+    <span v-show="showFallbackLetter" class="engine-icon-fallback-letter">{{ fallback }}</span>
     <img
       v-if="iconUrl"
       v-show="showImg && !probedIconError"
@@ -66,6 +66,10 @@ const {
 } = useProbedIconUrl(rawIconUrl, { onError: () => emit('error') });
 
 const fallback = computed(() => getFirstLetter(props.engine?.name ?? ''));
+
+const showFallbackLetter = computed(
+  () => !(iconUrl.value && showImg.value && !probedIconError.value),
+);
 </script>
 
 <style scoped>

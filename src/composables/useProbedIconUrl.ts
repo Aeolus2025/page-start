@@ -1,7 +1,7 @@
 import type { ComputedRef, Ref } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
 
-const PROBE_TIMEOUT_MS = 2000;
+const PROBE_TIMEOUT_MS = 4000;
 const LOAD_TIMEOUT_MS = 3000;
 
 /**
@@ -10,7 +10,7 @@ const LOAD_TIMEOUT_MS = 3000;
  */
 export function useProbedIconUrl(
   rawIconUrl: Ref<string> | ComputedRef<string>,
-  options?: { onError?: () => void }
+  options?: { onError?: () => void },
 ) {
   const iconUrl = ref('');
   const showImg = ref(false);
@@ -33,7 +33,7 @@ export function useProbedIconUrl(
       await fetch(url, {
         method: 'HEAD',
         mode: 'no-cors',
-        signal: controller.signal
+        signal: controller.signal,
       });
       clearTimeout(id);
       iconUrl.value = url;
@@ -52,23 +52,20 @@ export function useProbedIconUrl(
       if (!url) return;
       probe(url);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
-  watch(
-    iconUrl,
-    (url) => {
+  watch(iconUrl, (url) => {
+    showImg.value = false;
+    clearLoadTimer();
+    if (!url) return;
+    loadTimer = window.setTimeout(() => {
       showImg.value = false;
-      clearLoadTimer();
-      if (!url) return;
-      loadTimer = window.setTimeout(() => {
-        showImg.value = false;
-        iconError.value = true;
-        loadTimer = undefined;
-        options?.onError?.();
-      }, LOAD_TIMEOUT_MS);
-    }
-  );
+      iconError.value = true;
+      loadTimer = undefined;
+      options?.onError?.();
+    }, LOAD_TIMEOUT_MS);
+  });
 
   function handleImgLoad() {
     showImg.value = true;
@@ -89,6 +86,6 @@ export function useProbedIconUrl(
     showImg,
     iconError,
     handleImgLoad,
-    handleImgError
+    handleImgError,
   };
 }
