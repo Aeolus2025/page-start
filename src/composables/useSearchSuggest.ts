@@ -13,8 +13,12 @@ interface SuggestConfig {
 }
 
 function baiduParse(res: unknown): string[] {
+  // Baidu Suggest（不同 endpoint / 返回形态可能是：对象 { s: [...] } 或直接数组 [...]）
+  if (Array.isArray(res)) {
+    return res.filter((x): x is string => typeof x === 'string');
+  }
   if (res && typeof res === 'object' && Array.isArray((res as { s?: unknown }).s)) {
-    return ((res as { s: unknown[] }).s).filter((x): x is string => typeof x === 'string');
+    return (res as { s: unknown[] }).s.filter((x): x is string => typeof x === 'string');
   }
   return [];
 }
@@ -23,7 +27,7 @@ const BAIDU_SUGGEST_CONFIG: SuggestConfig = {
   url: 'https://suggestion.baidu.com/su',
   paramKeyForKeyword: 'wd',
   callbackParam: 'cb',
-  parse: baiduParse
+  parse: baiduParse,
 };
 
 function getSuggestConfig(_engineId: string): SuggestConfig | null {
@@ -35,7 +39,7 @@ const DEBOUNCE_MS = 250;
 export function useSearchSuggest(
   query: Ref<string>,
   currentEngine: Ref<SearchEngine | null | undefined>,
-  searchSuggestEnabled: Ref<boolean>
+  searchSuggestEnabled: Ref<boolean>,
 ) {
   const suggestions = ref<string[]>([]);
   const loading = ref(false);
@@ -99,7 +103,7 @@ export function useSearchSuggest(
 
         const params: Record<string, string> = {
           [config.paramKeyForKeyword]: keyword,
-          ...config.extraParams
+          ...config.extraParams,
         };
 
         try {
@@ -107,15 +111,17 @@ export function useSearchSuggest(
           if (lastRequestKeyword !== keyword) return;
           const list = config.parse(res);
           suggestions.value = Array.isArray(list) ? list : [];
-        } catch {
+        } catch (e) {
           if (lastRequestKeyword !== keyword) return;
           suggestions.value = [];
+          // 生产/扩展环境下也尽量打印一次错误，便于排查“加载中但无列表”的根因
+          console.warn('[useSearchSuggest] jsonp failed:', e);
         } finally {
           if (lastRequestKeyword === keyword) loading.value = false;
         }
       }, DEBOUNCE_MS);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   return {
@@ -125,6 +131,6 @@ export function useSearchSuggest(
     setHighlightIndex,
     incHighlight,
     decHighlight,
-    resetHighlight
+    resetHighlight,
   };
 }
