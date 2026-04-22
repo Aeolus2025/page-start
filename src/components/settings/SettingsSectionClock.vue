@@ -183,6 +183,10 @@ function onTimeFontStyleChange(e: Event) {
   cursor: pointer;
   min-width: 100px;
 }
+.select:focus {
+  outline: none;
+  border-color: var(--glass-border-strong);
+}
 
 /* 深色主题：开关打开状态使用柔和一点的紫色，减少刺眼感（统一在 style.css 中配置颜色） */
 [data-theme='dark'] .switch-label input:checked + .switch-slider {

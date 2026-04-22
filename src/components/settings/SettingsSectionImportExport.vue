@@ -43,6 +43,20 @@
         <span class="switch-slider"></span>
       </label>
     </div>
+    <div class="option-row">
+      <span class="option-label">导出搜索历史</span>
+      <label class="switch-label">
+        <input
+          id="export-search-history-enabled"
+          name="exportSearchHistoryEnabled"
+          type="checkbox"
+          :checked="config.exportSearchHistoryEnabled"
+          aria-label="导出搜索历史"
+          @change="onExportSearchHistoryEnabledChange"
+        />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
     <div class="import-export-row">
       <input
         id="import-config-file"
@@ -101,6 +115,10 @@ function onExportSearchEnginesEnabledChange(e: Event) {
 
 function onExportShortCutsEnabledChange(e: Event) {
   config.setExportShortCutsEnabled((e.target as HTMLInputElement).checked);
+}
+
+function onExportSearchHistoryEnabledChange(e: Event) {
+  config.setExportSearchHistoryEnabled((e.target as HTMLInputElement).checked);
 }
 
 function exportConfig() {

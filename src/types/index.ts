@@ -28,6 +28,8 @@ export interface ExportPayload {
   customEngines: CustomSearchEngine[] | { name: string; url: string }[];
   /** 快捷方式列表 */
   shortcuts?: ShortcutItem[];
+  /** 搜索历史列表 */
+  searchHistory?: string[];
   /** 当前选中的搜索引擎（用于恢复用户的默认引擎） */
   currentEngine?: { id?: string; name?: string; url?: string };
 }
@@ -57,6 +59,8 @@ export interface ConfigState {
   exportSearchEnginesEnabled: boolean;
   /** 导出配置时是否包含快捷方式 */
   exportShortCutsEnabled: boolean;
+  /** 导出配置时是否包含搜索历史 */
+  exportSearchHistoryEnabled: boolean;
 }
 
 /** 右键菜单项 */
@@ -96,6 +100,7 @@ export enum StorageKey {
   ExportBackgroundEnabled = 'exportBackgroundEnabled',
   ExportSearchEnginesEnabled = 'exportSearchEnginesEnabled',
   ExportShortCutsEnabled = 'exportShortCutsEnabled',
+  ExportSearchHistoryEnabled = 'exportSearchHistoryEnabled',
   HiddenEngineIds = 'hiddenEngineIds',
   CustomEngines = 'custom-engines',
   Shortcuts = 'shortcuts',

@@ -36,6 +36,7 @@ export const DEFAULT_CONFIG: ConfigState = {
   exportBackgroundEnabled: true,
   exportSearchEnginesEnabled: true,
   exportShortCutsEnabled: true,
+  exportSearchHistoryEnabled: true,
 };
 
 function readBool(key: StorageKey, defaultValue: boolean): boolean {
@@ -112,6 +113,10 @@ function applyImportedConfig(
     store.exportShortCutsEnabled = config.exportShortCutsEnabled;
     setItem(StorageKey.ExportShortCutsEnabled, config.exportShortCutsEnabled);
   }
+  if (typeof config.exportSearchHistoryEnabled === 'boolean') {
+    store.exportSearchHistoryEnabled = config.exportSearchHistoryEnabled;
+    setItem(StorageKey.ExportSearchHistoryEnabled, config.exportSearchHistoryEnabled);
+  }
 }
 
 export const useConfigStore = defineStore('config', {
@@ -168,6 +173,10 @@ export const useConfigStore = defineStore('config', {
       exportShortCutsEnabled: readBool(
         StorageKey.ExportShortCutsEnabled,
         DEFAULT_CONFIG.exportShortCutsEnabled,
+      ),
+      exportSearchHistoryEnabled: readBool(
+        StorageKey.ExportSearchHistoryEnabled,
+        DEFAULT_CONFIG.exportSearchHistoryEnabled,
       ),
     };
   },
@@ -243,6 +252,10 @@ export const useConfigStore = defineStore('config', {
       this.exportShortCutsEnabled = Boolean(value);
       setItem(StorageKey.ExportShortCutsEnabled, this.exportShortCutsEnabled);
     },
+    setExportSearchHistoryEnabled(value: boolean) {
+      this.exportSearchHistoryEnabled = Boolean(value);
+      setItem(StorageKey.ExportSearchHistoryEnabled, this.exportSearchHistoryEnabled);
+    },
     /** 恢复所有配置为默认值并持久化 */
     resetToDefaults() {
       this.theme = DEFAULT_CONFIG.theme;
@@ -259,6 +272,7 @@ export const useConfigStore = defineStore('config', {
       this.exportBackgroundEnabled = DEFAULT_CONFIG.exportBackgroundEnabled;
       this.exportSearchEnginesEnabled = DEFAULT_CONFIG.exportSearchEnginesEnabled;
       this.exportShortCutsEnabled = DEFAULT_CONFIG.exportShortCutsEnabled;
+      this.exportSearchHistoryEnabled = DEFAULT_CONFIG.exportSearchHistoryEnabled;
       setItem(StorageKey.Theme, this.theme);
       setItem(StorageKey.BackgroundImage, this.backgroundImage);
       setItem(StorageKey.TimeFormat24Enabled, this.timeFormat24Enabled);
@@ -273,6 +287,7 @@ export const useConfigStore = defineStore('config', {
       setItem(StorageKey.ExportBackgroundEnabled, this.exportBackgroundEnabled);
       setItem(StorageKey.ExportSearchEnginesEnabled, this.exportSearchEnginesEnabled);
       setItem(StorageKey.ExportShortCutsEnabled, this.exportShortCutsEnabled);
+      setItem(StorageKey.ExportSearchHistoryEnabled, this.exportSearchHistoryEnabled);
       useSearchEnginesStore().clearHiddenIds();
     },
     /** 导出配置为 JSON 对象（含 config、搜索引擎、快捷方式由各自 store 提供） */
@@ -294,6 +309,13 @@ export const useConfigStore = defineStore('config', {
       if (this.exportShortCutsEnabled) {
         payload.shortcuts = [...useShortcutsStore().items];
       }
+      if (this.exportSearchHistoryEnabled) {
+        const history = getItem(StorageKey.SearchHistory);
+        const parsed = history ? JSON.parse(history) : [];
+        payload.searchHistory = Array.isArray(parsed)
+          ? parsed.filter((x): x is string => typeof x === 'string')
+          : [];
+      }
       return payload;
     },
     /** 导入配置；返回 true 表示成功，建议调用后刷新页面以使引擎等生效 */
@@ -313,6 +335,10 @@ export const useConfigStore = defineStore('config', {
       if (Array.isArray(d.shortcuts)) {
         const list = d.shortcuts.filter(isShortcutItem);
         useShortcutsStore().replaceAll(list);
+      }
+      if (Array.isArray(d.searchHistory)) {
+        const history = d.searchHistory.filter((x): x is string => typeof x === 'string');
+        setItem(StorageKey.SearchHistory, history);
       }
       return true;
     },
