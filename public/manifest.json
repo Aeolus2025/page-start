@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Page Start",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "一个简洁的导航起始页",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https:"
   },
   "permissions": ["storage"],
   "host_permissions": ["https://suggestion.baidu.com/*"],

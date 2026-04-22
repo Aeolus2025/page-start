@@ -27,9 +27,12 @@
           <span class="engine-chevron">▾</span>
         </div>
         <div class="search-input-area">
+          <label for="global-search-input" class="sr-only">搜索内容</label>
           <input
+            id="global-search-input"
             ref="inputRef"
             v-model="query"
+            name="searchQuery"
             type="text"
             class="search-input"
             :class="{ single: !isFocused && !pickerVisible }"
@@ -538,6 +541,17 @@ onUnmounted(() => {
   max-width: 520px;
   box-sizing: border-box;
   overflow: visible;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 @media (max-width: 640px) {
   .search-wrapper {

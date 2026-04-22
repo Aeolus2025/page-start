@@ -5,8 +5,11 @@
       <span class="option-label">导出背景图</span>
       <label class="switch-label">
         <input
+          id="export-background-enabled"
+          name="exportBackgroundEnabled"
           type="checkbox"
           :checked="config.exportBackgroundEnabled"
+          aria-label="导出背景图"
           @change="onExportBackgroundEnabledChange"
         />
         <span class="switch-slider"></span>
@@ -16,8 +19,11 @@
       <span class="option-label">导出搜索引擎</span>
       <label class="switch-label">
         <input
+          id="export-search-engines-enabled"
+          name="exportSearchEnginesEnabled"
           type="checkbox"
           :checked="config.exportSearchEnginesEnabled"
+          aria-label="导出搜索引擎"
           @change="onExportSearchEnginesEnabledChange"
         />
         <span class="switch-slider"></span>
@@ -27,8 +33,11 @@
       <span class="option-label">导出快捷方式</span>
       <label class="switch-label">
         <input
+          id="export-shortcuts-enabled"
+          name="exportShortCutsEnabled"
           type="checkbox"
           :checked="config.exportShortCutsEnabled"
+          aria-label="导出快捷方式"
           @change="onExportShortCutsEnabledChange"
         />
         <span class="switch-slider"></span>
@@ -36,7 +45,9 @@
     </div>
     <div class="import-export-row">
       <input
+        id="import-config-file"
         ref="importInputRef"
+        name="importConfigFile"
         type="file"
         accept=".json,application/json"
         class="import-input"

@@ -1,8 +1,20 @@
 <template>
   <div v-if="visible" class="add-form">
-    <input v-model="name" type="text" placeholder="名称" class="add-input" @input="addError = ''" />
+    <label for="custom-engine-name" class="sr-only">搜索引擎名称</label>
     <input
+      id="custom-engine-name"
+      v-model="name"
+      name="customEngineName"
+      type="text"
+      placeholder="名称"
+      class="add-input"
+      @input="addError = ''"
+    />
+    <label for="custom-engine-url" class="sr-only">搜索引擎URL</label>
+    <input
+      id="custom-engine-url"
       v-model="url"
+      name="customEngineUrl"
       type="text"
       placeholder="搜索URL,需填完整地址(含%s,如 https://www.google.com/search?q=%s)"
       class="add-input"
@@ -87,6 +99,17 @@ function confirm() {
   font-size: 14px;
   box-sizing: border-box;
   min-width: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .add-input-error {
   border-color: rgba(180, 83, 60, 0.55);

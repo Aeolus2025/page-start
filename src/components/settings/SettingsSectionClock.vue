@@ -5,11 +5,25 @@
       <span class="option-label">制式</span>
       <div class="option-group">
         <label class="radio-label">
-          <input type="radio" :checked="config.timeFormat24Enabled" value="24" @change="config.setTimeFormat24Enabled(true)" />
+          <input
+            id="time-format-24"
+            name="timeFormat"
+            type="radio"
+            :checked="config.timeFormat24Enabled"
+            value="24"
+            @change="config.setTimeFormat24Enabled(true)"
+          />
           24 小时
         </label>
         <label class="radio-label">
-          <input type="radio" :checked="!config.timeFormat24Enabled" value="12" @change="config.setTimeFormat24Enabled(false)" />
+          <input
+            id="time-format-12"
+            name="timeFormat"
+            type="radio"
+            :checked="!config.timeFormat24Enabled"
+            value="12"
+            @change="config.setTimeFormat24Enabled(false)"
+          />
           12 小时
         </label>
       </div>
@@ -17,13 +31,27 @@
     <div class="option-row">
       <span class="option-label">显示秒</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.timeShowSecondsEnabled" @change="onTimeShowSecondsChange" />
+        <input
+          id="time-show-seconds-enabled"
+          name="timeShowSecondsEnabled"
+          type="checkbox"
+          :checked="config.timeShowSecondsEnabled"
+          aria-label="显示秒"
+          @change="onTimeShowSecondsChange"
+        />
         <span class="switch-slider"></span>
       </label>
     </div>
     <div class="option-row">
       <span class="option-label">字体大小</span>
-      <select class="select" :value="config.timeFontSize" @change="onTimeFontSizeChange">
+      <select
+        id="time-font-size"
+        name="timeFontSize"
+        class="select"
+        :value="config.timeFontSize"
+        aria-label="字体大小"
+        @change="onTimeFontSizeChange"
+      >
         <option value="small">小</option>
         <option value="medium">中</option>
         <option value="large">大</option>
@@ -31,14 +59,28 @@
     </div>
     <div class="option-row">
       <span class="option-label">字体粗细</span>
-      <select class="select" :value="config.timeFontWeight" @change="onTimeFontWeightChange">
+      <select
+        id="time-font-weight"
+        name="timeFontWeight"
+        class="select"
+        :value="config.timeFontWeight"
+        aria-label="字体粗细"
+        @change="onTimeFontWeightChange"
+      >
         <option value="normal">默认</option>
         <option value="bold">加粗</option>
       </select>
     </div>
     <div class="option-row">
       <span class="option-label">字体样式</span>
-      <select class="select" :value="config.timeFontStyle" @change="onTimeFontStyleChange">
+      <select
+        id="time-font-style"
+        name="timeFontStyle"
+        class="select"
+        :value="config.timeFontStyle"
+        aria-label="字体样式"
+        @change="onTimeFontStyleChange"
+      >
         <option value="normal">默认</option>
         <option value="italic">斜体</option>
         <option value="script">花体</option>
@@ -75,8 +117,14 @@ function onTimeFontStyleChange(e: Event) {
   padding: 10px 0;
   border-bottom: 1px solid var(--glass-divider);
 }
-.option-label { font-size: 14px; color: var(--glass-text); }
-.option-group { display: flex; gap: 16px; }
+.option-label {
+  font-size: 14px;
+  color: var(--glass-text);
+}
+.option-group {
+  display: flex;
+  gap: 16px;
+}
 .radio-label {
   display: flex;
   align-items: center;
@@ -85,7 +133,9 @@ function onTimeFontStyleChange(e: Event) {
   color: var(--glass-text);
   cursor: pointer;
 }
-.radio-label input { cursor: pointer; }
+.radio-label input {
+  cursor: pointer;
+}
 .switch-label {
   position: relative;
   display: inline-block;
@@ -93,7 +143,11 @@ function onTimeFontStyleChange(e: Event) {
   height: 24px;
   flex-shrink: 0;
 }
-.switch-label input { opacity: 0; width: 0; height: 0; }
+.switch-label input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 .switch-slider {
   position: absolute;
   inset: 0;
@@ -113,8 +167,12 @@ function onTimeFontStyleChange(e: Event) {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s;
 }
-.switch-label input:checked + .switch-slider { background: var(--color-accent); }
-.switch-label input:checked + .switch-slider::before { transform: translateX(20px); }
+.switch-label input:checked + .switch-slider {
+  background: var(--color-accent);
+}
+.switch-label input:checked + .switch-slider::before {
+  transform: translateX(20px);
+}
 .select {
   padding: 8px 12px;
   border-radius: 8px;
@@ -127,11 +185,11 @@ function onTimeFontStyleChange(e: Event) {
 }
 
 /* 深色主题：开关打开状态使用柔和一点的紫色，减少刺眼感（统一在 style.css 中配置颜色） */
-[data-theme="dark"] .switch-label input:checked + .switch-slider {
+[data-theme='dark'] .switch-label input:checked + .switch-slider {
   background: var(--switch-on-bg);
 }
 @media (prefers-color-scheme: dark) {
-  [data-theme="system"] .switch-label input:checked + .switch-slider {
+  [data-theme='system'] .switch-label input:checked + .switch-slider {
     background: var(--switch-on-bg);
   }
 }

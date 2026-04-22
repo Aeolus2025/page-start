@@ -4,28 +4,56 @@
     <div class="option-row">
       <span class="option-label">页面加载时聚焦搜索栏</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.focusSearchOnLoadEnabled" @change="onFocusSearchOnLoadChange" />
+        <input
+          id="focus-search-on-load"
+          name="focusSearchOnLoadEnabled"
+          type="checkbox"
+          :checked="config.focusSearchOnLoadEnabled"
+          aria-label="页面加载时聚焦搜索栏"
+          @change="onFocusSearchOnLoadChange"
+        />
         <span class="switch-slider"></span>
       </label>
     </div>
     <div class="option-row">
       <span class="option-label">启用搜索历史</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.searchHistoryEnabled" @change="onSearchHistoryChange" />
+        <input
+          id="search-history-enabled"
+          name="searchHistoryEnabled"
+          type="checkbox"
+          :checked="config.searchHistoryEnabled"
+          aria-label="启用搜索历史"
+          @change="onSearchHistoryChange"
+        />
         <span class="switch-slider"></span>
       </label>
     </div>
     <div class="option-row">
       <span class="option-label">启用搜索建议</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.searchSuggestEnabled" @change="onSearchSuggestChange" />
+        <input
+          id="search-suggest-enabled"
+          name="searchSuggestEnabled"
+          type="checkbox"
+          :checked="config.searchSuggestEnabled"
+          aria-label="启用搜索建议"
+          @change="onSearchSuggestChange"
+        />
         <span class="switch-slider"></span>
       </label>
     </div>
     <div class="option-row">
       <span class="option-label">在新标签页打开搜索结果</span>
       <label class="switch-label">
-        <input type="checkbox" :checked="config.openSearchInNewTabEnabled" @change="onOpenSearchInNewTabChange" />
+        <input
+          id="open-search-in-new-tab-enabled"
+          name="openSearchInNewTabEnabled"
+          type="checkbox"
+          :checked="config.openSearchInNewTabEnabled"
+          aria-label="在新标签页打开搜索结果"
+          @change="onOpenSearchInNewTabChange"
+        />
         <span class="switch-slider"></span>
       </label>
     </div>
@@ -75,7 +103,11 @@ function onOpenSearchInNewTabChange(e: Event) {
   height: 24px;
   flex-shrink: 0;
 }
-.switch-label input { opacity: 0; width: 0; height: 0; }
+.switch-label input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 .switch-slider {
   position: absolute;
   inset: 0;
@@ -95,6 +127,10 @@ function onOpenSearchInNewTabChange(e: Event) {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s;
 }
-.switch-label input:checked + .switch-slider { background: var(--switch-on-bg); }
-.switch-label input:checked + .switch-slider::before { transform: translateX(20px); }
+.switch-label input:checked + .switch-slider {
+  background: var(--switch-on-bg);
+}
+.switch-label input:checked + .switch-slider::before {
+  transform: translateX(20px);
+}
 </style>
