@@ -42,7 +42,7 @@
 import { computed } from 'vue';
 import { useProbedIconUrl } from '@/composables/useProbedIconUrl';
 import type { ShortcutItem } from '@/types';
-import { isIconUrl } from '@/utils/checkUrl';
+import { isIconUrl, parseHttpUrl } from '@/utils/checkUrl';
 import { getFirstLetter } from '@/utils/getIcon';
 
 const props = defineProps<{
@@ -61,7 +61,8 @@ const { iconUrl, showImg, iconError, handleImgLoad, handleImgError } = useProbed
 
 const fallbackText = computed(() => {
   const icon = (props.item.icon || '').trim();
-  if (!isIconUrl(icon) && icon) return icon;
+  // 历史数据里可能残留不可加载的 URL（如内网 favicon），不要把整段链接当文本展示。
+  if (!isIconUrl(icon) && icon && !parseHttpUrl(icon)) return icon;
   return getFirstLetter(props.item.name);
 });
 

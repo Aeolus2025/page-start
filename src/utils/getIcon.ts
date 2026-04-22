@@ -1,4 +1,4 @@
-import { parseHttpUrl } from '@/utils/checkUrl';
+import { parseHttpUrl, isBlockedLocalOrPrivateHost } from '@/utils/checkUrl';
 
 /**
  * 根据任意 URL 推导站点 favicon（/favicon.ico）。
@@ -9,6 +9,7 @@ export function getFaviconFromUrl(inputUrl: string): string {
   const u = parseHttpUrl(inputUrl.trim());
   if (!u) return '';
   const host = u.hostname;
+  if (isBlockedLocalOrPrivateHost(host)) return '';
   const protocol = u.protocol || 'https:';
   return host ? `${protocol}//${host}/favicon.ico` : '';
 }
@@ -18,4 +19,3 @@ export function getFirstLetter(name: string): string {
   const s = (name || '').trim();
   return s ? s.charAt(0).toUpperCase() : '';
 }
-

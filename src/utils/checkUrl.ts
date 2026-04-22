@@ -16,6 +16,28 @@ export function parseHttpUrl(input: string): URL | null {
 }
 
 /**
+ * 是否为不应请求远程图标的主机（本地/内网地址）。
+ */
+export function isBlockedLocalOrPrivateHost(hostname: string): boolean {
+  const host = (hostname || '').trim().toLowerCase();
+  if (!host) return true;
+
+  if (host === 'localhost' || host === '127.0.0.1') return true;
+
+  const ipv4Match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!ipv4Match) return false;
+
+  const octets = ipv4Match.slice(1).map((x) => Number(x));
+  if (octets.some((x) => Number.isNaN(x) || x < 0 || x > 255)) return false;
+
+  if (octets[0] === 10) return true;
+  if (octets[0] === 192 && octets[1] === 168) return true;
+  if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return true;
+
+  return false;
+}
+
+/**
  * 校验自定义搜索引擎 URL 格式。
  * 支持：① 完整 URL（含占位符 %s 或 {query}）；② 基础路径（不含占位符，保存时会自动追加 ?q=关键词）
  */
@@ -80,7 +102,10 @@ export function validateShortcutUrl(url: string): ValidateResult {
 
 /** 判断是否为可当作图片 URL 使用的字符串（http/https/data） */
 export function isIconUrl(icon: string): boolean {
-  return Boolean(
-    icon && (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')),
-  );
+  const trimmed = (icon || '').trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith('data:')) return true;
+  const u = parseHttpUrl(trimmed);
+  if (!u) return false;
+  return !isBlockedLocalOrPrivateHost(u.hostname);
 }
